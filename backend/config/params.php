@@ -1,0 +1,27 @@
+<?php
+return [
+    'adminEmail' => 'admin@example.com',
+    'userLevel' => ['1' => 'Level 1', '2' => 'Level 2', '3' => 'Level 3', '4' => 'Level 4'],
+    'status'=>['Open'=>'Open','Resolve'=>'Resolve','Inprocess'=>'Inprocess','Closed'=>'Closed','Forward'=>'Forward'],
+    'status_color'=>['Open'=>'#cf2929','Resolve'=>'#FD6A02','Inprocess'=>'#21a808','Closed'=>'#9E7CD7','Forward'=>'Forward'],
+    'priority'=>['Low'=>'Low','Normal'=>'Normal','High'=>'High','Critical'=>'Critical',],
+    'priority_color'=>['Low'=>'#f9f100','Normal'=>'#30ef00d1','High'=>'#428bca','Critical'=>'#fd0505c7',],
+    'ticket_subjects'=>[
+        1 => 'Browser Repairing',
+        2 => 'Desktop Repairing',
+        3 => 'General',
+        4 => 'Laptop Repairing',
+        5 => 'Miscellaneous',
+        6 => 'Microsoft Office',
+        7 => 'Printer Repairing',
+        8 => 'Printer-AIO Repairing',
+        9 => 'Scanner Repairing',
+        10 => 'Software ',
+        11 => 'Tablet Mail Configuration',
+        12 => 'Ups repairing',
+        13 => 'Wifi repairing',
+        14 => 'Simple Network Maintenance',
+        15 => 'Additional Service',
+        16 => 'Engineer Visit',
+    ],
+];
