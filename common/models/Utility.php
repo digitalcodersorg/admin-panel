@@ -28,7 +28,7 @@ class Utility {
     public function connect() {
         $this->_s3 = S3Client::factory([
                     'version' => '2006-03-01',
-                    'region' => 'us-east-1',
+                    'region' => 'us-east-2',
                     'credentials' => array(
                         'key' => Yii::$app->params['s3_keys']['key'],
                         'secret' => Yii::$app->params['s3_keys']['secret'])
@@ -122,7 +122,7 @@ class Utility {
         fclose($file);
 
         // S3 Connection
-        $image = $this->upload(Yii::$app->params['aws']['UPLOAD_TEMP_FILE_PATH'] . $fileName, $fileName, 'digitalcoders');
+        $image = $this->upload(Yii::$app->params['aws']['UPLOAD_TEMP_FILE_PATH'] . $fileName, $fileName, 'digital-coders');
 
 //        unlink($sourcePath);
         $revalue = Yii::$app->params['aws']['CDN_URL'] . $fileName;
