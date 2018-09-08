@@ -9,10 +9,10 @@
 ?>
 
  <!-- footer content -->
-        <footer>
+        <footer >
             <div class="pull-right">
                 My Admin Panel
-                <br />
+                 
                 Extension for Yii framework 2 <a href="http://yiister.ru" rel="nofollow" target="_blank"></a>
             </div>
             <div class="clearfix"></div>

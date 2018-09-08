@@ -11,15 +11,15 @@ use common\models\AuthItem;
 
 $this->title = 'Update User';
 $this->params['breadcrumbs'][] = Html::encode($this->title);
+$sub_status = ['Active','Pause','Suspend','On Hold','Expired','Renewed','Cancelled'];
+//echo json_encode(['product_title'=>'PC AMC 1','product_price'=>2321,'product_id'=>1232]);
 ?>
 <div class="row">
-    <div class="col-md-12">
-        <div class="alert alert-info alert-dismissible fade in" role="alert">
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span>
-            </button>
-            <strong>Holy guacamole!</strong> Best check yo self, you're not looking too good.
+<!--    <div class="col-md-12">
+        <div class="alert alert-success" role="alert">
+            <strong>Success <span class="message">Data saved successfully!</span></strong>
         </div>
-    </div>
+    </div>-->
     <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="x_panel">
             <div class="x_title">
@@ -32,46 +32,51 @@ $this->params['breadcrumbs'][] = Html::encode($this->title);
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
-                    <?php $form = ActiveForm::begin(["id" => "create-user", 'options' => ['enctype' => 'multipart/form-data'],]); ?>
+                <?php $form = ActiveForm::begin(["id" => "update-user", 'options' => ['enctype' => 'multipart/form-data'],]); ?>
+                <?= $form->field($model, 'id')->hiddenInput(['value' => $model->id])->label(false) ?>
                 <div class="col-md-6 form-group">
-<?= $form->field($model, 'username')->textInput(['maxlength' => true, 'readOnly' => ($model->scenario == 'update') ? "readonly" : ""]) ?>
+                    <?= $form->field($model, 'username')->textInput(['maxlength' => true, 'readOnly' => ($model->scenario == 'update') ? "readonly" : ""]) ?>
                 </div>
                 <div class="col-md-6 form-group">
-<?= $form->field($model, 'email')->textInput(['maxlength' => true]) ?>
-                </div>
-                
-
-                <div class="col-md-6 form-group">
-<?= $form->field($model, 'first_name')->textInput(['maxlength' => true]) ?>
-                </div>
-
-                <div class="col-md-6 form-group">
-<?= $form->field($model, 'last_name')->textInput(['maxlength' => true]) ?>
-                </div>
-                <div class="col-md-6 form-group">
-<?= $form->field($model, 'gender')->dropDownList(['male' => 'Male', 'female' => 'Female', 'other' => 'Other',], ['prompt' => 'Gender']) ?>
-                </div>
-
-                <div class="col-md-6 form-group">
-<?= $form->field($model, 'date_of_birth')->textInput(['class' => 'form-control calender',]) ?>
-                </div>
-
-                <div class="col-md-6 form-group">
-<?= $form->field($model, 'cms_user_contact_no')->textInput(['maxlength' => true])->label('Primary Contact No.') ?>
+                    <?= $form->field($model, 'email')->textInput(['maxlength' => true]) ?>
                 </div>
 
 
                 <div class="col-md-6 form-group">
-<?= $form->field($model, 'status')->dropDownList(['Active' => 'Active', 'Inactive' => 'Inactive',], ['prompt' => 'Select Status']) ?> 
+                    <?= $form->field($model, 'first_name')->textInput(['maxlength' => true]) ?>
                 </div>
-               
-                <div class="branch-address">
-<?php echo $this->render('../widgets/_addressForm', ['form' => $form, 'addressModel' => $billing, 'label' => "Billing Address", 'size' => 6]); ?>
+
+                <div class="col-md-6 form-group">
+                    <?= $form->field($model, 'last_name')->textInput(['maxlength' => true]) ?>
                 </div>
-                <div class="branch-address">
-                <?php echo $this->render('../widgets/_addressForm', ['form' => $form, 'addressModel' => $shipping, 'label' => "Shipping Address", 'size' => 6]); ?>
+                <div class="col-md-6 form-group">
+                    <?= $form->field($model, 'gender')->dropDownList(['male' => 'Male', 'female' => 'Female', 'other' => 'Other',], ['prompt' => 'Gender']) ?>
                 </div>
-<?php ActiveForm::end(); ?>
+
+                <div class="col-md-6 form-group">
+                    <?= $form->field($model, 'date_of_birth')->textInput(['class' => 'form-control calender',]) ?>
+                </div>
+
+                <div class="col-md-6 form-group">
+                    <?= $form->field($model, 'cms_user_contact_no')->textInput(['maxlength' => true])->label('Primary Contact No.') ?>
+                </div>
+
+
+                <div class="col-md-6 form-group">
+                    <?= $form->field($model, 'status')->dropDownList(['Active' => 'Active', 'Inactive' => 'Inactive',], ['prompt' => 'Select Status']) ?> 
+                </div>
+                <div class="row">
+                    <div class="branch-address col-md-12">
+                        <?php echo $this->render('../widgets/_addressForm', ['form' => $form, 'addressModel' => $billing, 'label' => "Billing Address", 'size' => 6, 'minimize' => true, 'no' => 1]); ?>
+
+                        <?php echo $this->render('../widgets/_addressForm', ['form' => $form, 'addressModel' => $shipping, 'label' => "Shipping Address", 'size' => 6, 'minimize' => true, 'no' => 2]); ?>
+                    </div>
+                </div>
+                <div class="col-md-6 col-xs-12">
+                    <span class="btn btn-primary" id="save-user-data">Save</span>
+                    <a class="btn btn-primary" href="">Back</a>
+                </div>
+                <?php ActiveForm::end(); ?>
             </div>
         </div>
     </div>
@@ -98,7 +103,7 @@ $this->params['breadcrumbs'][] = Html::encode($this->title);
                             <option value="Switches">Switches</option>
                             <option value="Tally information">Tally information</option>
                             <option value="Busy Information">Busy Information</option>
-                            <option value="Server User Id & Password">Server User Id & Password</option>
+                            <option value="Server User Id and Password">Server User Id & Password</option>
                             <option value="Sharing Drive Data">Sharing Drive Data</option>
                             <option value="Sharing Access">Sharing Access</option>
                             <option value="Network Router Access">Network Router Access</option>
@@ -106,13 +111,50 @@ $this->params['breadcrumbs'][] = Html::encode($this->title);
                             <option value="Non AMC Products">Non AMC Products</option>
                         </select> 
                         <span class="input-group-btn">
-                            <button type="button" class="btn btn-primary">Add</button>
+                            <button type="button" class="btn btn-primary" id="add-data-field">Add</button>
                         </span>
                     </div>
                 </div>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <button class="btn btn-primary" id="update-user-personal-data">Update Detail</button>
+                    <span class="error-summary hide">Data Cannot be saved without update.</span>
+                </div>
+                <div class="clearfix"></div>
+                <?php $form = ActiveForm::begin(["id" => "update-user-data", 'options' => ['enctype' => 'multipart/form-data'],]); ?>
+                <?= $form->field($model, 'user_id')->hiddenInput(['value' => $model->id])->label(false) ?>
+                <div class="" id="data-fields">
+
+                    <?php
+                    if (!empty($personal_data)) {
+                        $i = 0;
+                        foreach ($personal_data as $data) {
+                            ?>
+                            <div class="form-group col-md-6 col-sm-12 col-xs-12 meta-data" id="<?= strtolower(str_replace(' ', '_', $data['meta_key'])) ?>">
+                                <label class="control-label col-md-12 col-xs-12"><?= $data['meta_key'] ?> 
+                                    <small class="btn btn-danger btn-sm remove-data" data-id="<?= strtolower(str_replace(' ', '_', $data['meta_key'])) ?>">x</small>
+                                </label> 
+                                <input type="hidden" class="meta_key" name="personl_data[<?= $i ?>][meta_key]" value="<?= $data['meta_key'] ?>"/>
+                                <textarea class="form-control" class="meta_val" rows="5" name="personl_data[<?= $i ?>][meta_value]"><?= $data['meta_value'] ?></textarea>
+                            </div>
+                            <?php
+                            $i++;
+                        }
+                    }
+                    ?>
+
+                    <div class="form-group col-md-6 col-sm-12 col-xs-12 hide" id="data-template">
+                        <label class="control-label col-md-12 col-xs-12"><span class="temp-label">Label</span>
+                            <small class="btn btn-danger btn-sm remove-data" data-id="">x</small>
+                        </label> 
+                        <input type="hidden" class="meta_key" name="" value=""/>
+                        <textarea class="form-control" class="meta_val" rows="5" name=""></textarea>
+                    </div>
+                </div>
+<?php ActiveForm::end(); ?>
             </div>
         </div>
     </div>
+    <?php if(!empty($subscriptions)){?>
     <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="x_panel">
             <div class="row x_title">
@@ -120,7 +162,7 @@ $this->params['breadcrumbs'][] = Html::encode($this->title);
                     <h2><i class="fa fa-laptop" aria-hidden="true"></i> Customer AMC Data</h2>
                 </div>
                 <div class="col-md-6 col-sm-6 col-xs-12">
-                    <h2 class="col-md-12 col-xs-12 text-right">4 AMC Subscribed</h2>
+                    <h2 class="col-md-12 col-xs-12 text-right"><?= count($subscriptions);?> AMC Subscribed</h2>
                 </div>
                 <div class="clearfix"></div>
             </div>
@@ -130,14 +172,12 @@ $this->params['breadcrumbs'][] = Html::encode($this->title);
                     <!-- required for floating -->
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs tabs-left">
-                        <li class="active"><a data-amc="10" class="fetch-amc">PC AMC - 1 (#10)</a>
+                        <?php $true = true; foreach ($subscriptions as $subscription){?>
+                        <?php $product = json_decode($subscription['product_detail'], true);?>
+                        <li class="<?= ($true) ? 'active' : ''?>">
+                            <a data-amc="<?= $subscription['ID']?>" class="fetch-amc"><?= $product['product_title']?> (#<?= $subscription['subscription_numebr']?>)</a>
                         </li>
-                        <li class=""><a data-amc="11" class="fetch-amc">PC AMC - 2 (#11)</a>
-                        </li>
-                        <li class=""><a data-amc="12" class="fetch-amc">PC AMC - 3 (#2342)</a>
-                        </li>
-                        <li class=""><a data-amc="13" class="fetch-amc">PC AMC - 30 (#34324)</a>
-                        </li>
+                        <?php $true = false; }?>
                     </ul>
                 </div>
 
@@ -150,25 +190,21 @@ $this->params['breadcrumbs'][] = Html::encode($this->title);
                                 <div class="row">
                                     <div class="form-group col-md-4 col-sm-4 col-xs-12">
                                         <label>Subscription Start Date</label>
-                                        <input type="text" name="sub_start" value="" class="form-control FrDate"/>
+                                        <input type="text" name="sub_start" value="<?= date_format(date_create($subscriptions[0]['start_date']), "Y-m-d H:i")?>" class="form-control FrDate"/>
                                     </div>
                                     <div class="form-group col-md-4 col-sm-4 col-xs-12">
                                         <label>Subscription End Date</label>
-                                        <input type="text" name="sub_end" value="" class="form-control ToDate"/>
+                                        <input type="text" name="sub_end" value="<?= date_format(date_create($subscriptions[0]['end_date']), "Y-m-d H:i")?>" class="form-control ToDate"/>
                                     </div>
                                     <div class="form-group col-md-4 col-sm-4 col-xs-12">
                                         <label>Status</label>
                                         <select name="" class="form-control">
-                                            <option value="Active">Active</option>
-                                            <option value="Pause">Pause</option>
-                                            <option value="Sudpend">Suspend</option>
-                                            <option value="On Hold">On Hold</option>
-                                            <option value="On Hold">Cancelled</option>
-                                            <option value="Expire">Expired</option>
-                                            <option value="Renewed">Renewed</option>
+                                            <?php foreach($sub_status as $status){?>
+                                            <option value="<?= $status?>" <?= ($status == $subscriptions[0]['status']) ? 'selected' : ''?>><?= $status?></option>
+                                            <?php }?>
                                         </select>
                                     </div>
-                                <?php echo $this->render('../widgets/_addressForm', ['form' => $form, 'addressModel' => $billing, 'label' => "AMC Address", 'size' => 12, 'minimize' => true]); ?>
+                                <?php echo $this->render('../widgets/_addressForm', ['form' => $form, 'addressModel' => $billing, 'label' => "AMC Address", 'size' => 12, 'minimize' => true, 'no' => 3]); ?>
                                 </div>
 <?php ActiveForm::end(); ?>
                             </div>
@@ -208,13 +244,9 @@ $this->params['breadcrumbs'][] = Html::encode($this->title);
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12">
-            <?php $form = ActiveForm::begin(); ?>
-
-<?php ActiveForm::end(); ?>
-        </div>
-    </div>
+    
+    <?php }?>
+  
 
 </div>
 

@@ -54,7 +54,10 @@ AppAsset::register($this);
         $class = 'login';
     }
 ?>
-<body class="<?= $class?>" >
+<body class="<?= $class?> " >
+    <div id="myProgress" style="display:none">
+  <div id="myBar"></div>
+</div>
 <?php $this->beginBody(); ?>
      <!--navigation bar starts-->
      <div id="block-ui" style="display:none;"> 

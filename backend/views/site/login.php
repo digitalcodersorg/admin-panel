@@ -23,7 +23,7 @@ $this->params['breadcrumbs'][] = $this->title;
               </div>
               <div class="login-btn">
                   <?= Html::submitButton('Login', ['class' => 'btn btn-default submit', 'name' => 'login-button']) ?>
-                <a class="reset_pass" href="#">Lost your password?</a>
+                <a class="reset_pass" href="site/forgotpassword">Lost your password?</a>
               </div>
 
               <div class="clearfix"></div>
