@@ -17,6 +17,8 @@ use yii\db\Expression;
 use yii\web\UploadedFile;
 use yii\filters\AccessControl;
 use yii\data\Pagination;
+use common\models\Subscription;
+use common\models\SubscriptionItem;
 /**
  * UserController implements the CRUD actions for User model.
  */
@@ -51,8 +53,8 @@ class UserController extends Controller {
      */
     public function actionIndex() {
         if (!Yii::$app->user->can('view-user')) {
-                throw new ForbiddenHttpException;
-            }
+            throw new ForbiddenHttpException;
+        }
         $user = new User();
 
         return $this->render('index', [
@@ -246,49 +248,116 @@ class UserController extends Controller {
 
     public function actionCustomerInfo() {
         if (!Yii::$app->user->can('view-customer-info')) {
-                throw new ForbiddenHttpException;
+            throw new ForbiddenHttpException;
         }
-       $user = new User();
-       $pages = new Pagination(['totalCount' => 2]);
-        return $this->render('customer-list',[
-            'users' => $user->search(Yii::$app->request->queryParams,'frontend_user'),
-            'username' => isset(Yii::$app->request->queryParams['username']) ? Yii::$app->request->queryParams['username'] : "",
-            'pages'=> $pages,
+        $user = new User();
+        $pages = new Pagination(['totalCount' => 2]);
+        return $this->render('customer-list', [
+                    'users' => $user->search(Yii::$app->request->queryParams, 'frontend_user'),
+                    'username' => isset(Yii::$app->request->queryParams['username']) ? Yii::$app->request->queryParams['username'] : "",
+                    'pages' => $pages,
         ]);
     }
 
     public function actionViewCustomer() {
         if (!Yii::$app->user->can('view-customer-info')) {
-                throw new ForbiddenHttpException;
+            throw new ForbiddenHttpException;
         }
         $user = new User();
-        return $this->render('view-customer',[
-            'users' => $user->search(Yii::$app->request->queryParams,'frontend_user'),
-            'username' => isset(Yii::$app->request->queryParams['username']) ? Yii::$app->request->queryParams['username'] : "",
+        return $this->render('view-customer', [
+                    'users' => $user->search(Yii::$app->request->queryParams, 'frontend_user'),
+                    'username' => isset(Yii::$app->request->queryParams['username']) ? Yii::$app->request->queryParams['username'] : "",
         ]);
     }
 
     public function actionUpdateCustomer($user = "") {
         if (!Yii::$app->user->can('update-customer-info')) {
-                throw new ForbiddenHttpException;
+            throw new ForbiddenHttpException;
         }
-        return $this->render('update-customer', [
-                    'model'=> User::findOne($user),
-                    'shipping' => new UserAddress(),
-                    'billing' => new UserAddress(),
-        ]);
+
+        if (Yii::$app->request->post()) {
+            $post = Yii::$app->request->post();
+            $model = User::findOne($post['User']['id']);
+            if (isset($post['UserAddress'][1]['ID'])) {
+                $defaultShipping = UserAddress::findOne($post['UserAddress'][2]['ID']);
+            } else {
+                $defaultShipping = new UserAddress();
+                $defaultShipping->user_id = $post['User']['id'];
+                $defaultShipping->type = 'default_shipping';
+            }
+            if (isset($post['UserAddress'][2]['ID'])) {
+                $defaultBilling = UserAddress::findOne($post['UserAddress'][1]['ID']);
+            } else {
+                $defaultBilling = new UserAddress();
+                $defaultBilling->user_id = $post['User']['id'];
+                $defaultBilling->type = 'default_billing';
+            }
+            $defaultShipping->attributes = $post['UserAddress'][2];
+            $defaultShipping->save();
+            $defaultBilling->attributes = $post['UserAddress'][1];
+            $defaultBilling->save();
+            $model->confirm_password = $model->password_hash;
+            $model->attributes = $post['User'];
+            if ($model->validate()) {
+                $model->save();
+                return 1;
+            } else {
+                print_r($model->errors);
+                return 0;
+            }
+        } else {
+            $modal = User::findOne($user);
+            $data = $modal->getUserMeta($user, 'USER_PERSONAL_DATA');
+            $defaultShipping = UserAddress::find()->where(['type' => 'default_shipping', 'user_id' => $user])->orderBy(['ID' => SORT_DESC])->one();
+            $defaultBilling = UserAddress::find()->where(['type' => 'default_billing', 'user_id' => $user])->orderBy(['ID' => SORT_DESC])->one();
+            $subscriptions = Subscription::find()->where(['subscriber_id'=>$user])->asArray()->all();
+            return $this->render('update-customer', [
+                        'model' => $modal,
+                        'subscriptions' => $subscriptions,
+                        'personal_data' => !empty($data) ? json_decode($data, true) : [],
+                        'shipping' => empty($defaultShipping) ? new UserAddress : $defaultShipping,
+                        'billing' => empty($defaultBilling) ? new UserAddress : $defaultBilling,
+            ]);
+        }
     }
+
     public function actionGetStates($country = '') {
-        if(!empty($country)){
+        if (!empty($country)) {
             return json_encode(Country::getStateList($country));
         }
         return NULL;
     }
-    
-    public function actionGetUsers($did = ''){
-        if(!empty($did)){
+
+    public function actionGetUsers($did = '') {
+        if (!empty($did)) {
             return json_encode(User::getUserByDepartment($did));
         }
         return json_encode(['data not found!']);
+    }
+    public function actionUpdateCustomerData(){
+        if (Yii::$app->request->post()) {
+            $post = Yii::$app->request->post();
+            $user = new User();
+            $data = $user->getUserMeta($post['User']['user_id'], 'USER_PERSONAL_DATA');
+            if(count($data) > 0){
+                $flag = $user->updateUserMeta('USER_PERSONAL_DATA', json_encode($post['personl_data']),$post['User']['user_id']);
+            }else{
+                $flag = $user->addUserMeta('USER_PERSONAL_DATA', json_encode($post['personl_data']),$post['User']['user_id']);
+            }
+            
+            if($flag){
+                return 1;
+            }
+        }
+        return 0;
+    }
+    //Fetch Customer personal data with user_id
+    public function actionGetCustomerData($uid = ''){
+        if (!empty($uid)) {
+            $user = new User();
+            $data = $user->getUserMeta($uid, 'USER_PERSONAL_DATA');
+            return json_encode($data);
+        }
+        return 'Invalid Request';
     }
 }

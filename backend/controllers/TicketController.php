@@ -12,6 +12,7 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
  * PostController implements the CRUD actions for Post model.
@@ -29,6 +30,15 @@ class TicketController extends Controller {
                     'delete' => ['POST'],
                 ],
             ],
+            'access' => [
+                'class' => AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -40,7 +50,16 @@ class TicketController extends Controller {
         return $this->render('index', []);
     }
     public function actionTicketlist() {
-        
+        if (!Yii::$app->user->can('view-tickets')) {
+                throw new ForbiddenHttpException;
+        }
+        $role = '';
+        if(Yii::$app->user->can('assign-ticket')){
+            $role = 'assigner';
+        } 
+        if(Yii::$app->user->can('is-admin')){
+            $role = 'admin';
+        }
         $q = Yii::$app->request->queryParams;
         $branch = isset($q['branch']) ?  $q['branch'] : '';
         $departments = [];
@@ -48,15 +67,16 @@ class TicketController extends Controller {
             $departments = Department::find()->select(['ID','name'])->where(['parent'=>$branch])->createCommand()->queryAll();  
         }
         $users = isset($q['department']) ? User::getUserByDepartment($q['department']) : [];
-        $tickets = Ticket::search(Yii::$app->request->queryParams);
+        $tickets = Ticket::search(Yii::$app->request->queryParams, '', $role, Yii::$app->user->identity->id);
         $branches = Department::find()->select(['ID','name'])->where(['status'=>'Active','parent'=>NULL])->createCommand()->queryAll();
         return $this->render('ticketlist', [
             'tickets'=>$tickets['data'],
-            'tickets_count'=>Ticket::search(Yii::$app->request->queryParams,'count'),
+            'tickets_count'=>Ticket::search(Yii::$app->request->queryParams,'count',$role, Yii::$app->user->identity->id),
             'pages'=>$tickets['pagination'],
             'branches'=>$branches,
             'departments'=>$departments,
             'users'=>$users,
+            'role'=>$role,
             'q'=>Yii::$app->request->queryParams,
                 ]);
     }
@@ -87,10 +107,20 @@ class TicketController extends Controller {
         if(empty($ticket['data'])){
             throw new NotFoundHttpException;
         }
+        if(($ticket['data'][0]['ticket_status'] == 'Open' && $ticket['data'][0]['assigned_to'] == Yii::$app->user->identity->id) || ($ticket['data'][0]['ticket_status'] == 'Forward' && $ticket['data'][0]['forwarded_to'] == Yii::$app->user->identity->id)){
+            $ticketUpdate = Ticket::findOne($id);
+            $ticketUpdate->status_updated_on = date('Y-m-d H:i:s');
+            $ticketUpdate->updated_on = date('Y-m-d H:i:s');
+            $ticketUpdate->ticket_status = 'Inprocess';
+            $ticketUpdate->save();
+            $ticket['data'][0]['ticket_status'] = 'Inprocess';
+            $ticket['data'][0]['updated_on'] = date('Y-m-d H:i:s');
+            $ticket['data'][0]['status_updated_on'] = date('Y-m-d H:i:s');
+        }
         
         $userData = User::find()->where(['id'=>$ticket['data'][0]['created_by']])->asArray()->one();
         $userAddress = UserAddress::getUserAddress('',$ticket['data'][0]['created_by']);
-        $ticketActivity = TicketActivity::find()->where(['ticket_id'=>$id])->asArray()->all();
+        $ticketActivity = TicketActivity::getActivities($id);
         return $this->render('view', [
                 'ticket'=>$ticket['data'][0],   
                 'user'=>$userData,   
@@ -99,47 +129,27 @@ class TicketController extends Controller {
                 'branch'=>Department::find()->select(['ID','name'])->where(['status'=>'Active','parent'=>NULL])->createCommand()->queryAll(),   
         ]);
     }
-    public function actionUpdate() {
-         if (!Yii::$app->user->can('update-tickets')) {
-                return json_encode(['Invalid request']);
+    public function actionAssignTicket(){
+        if(Yii::$app->request->post()){
+            $post = Yii::$app->request->post();
+            if(Ticket::assignTicket($post)){
+                return 1;
             }
+            
+        }
+        return 0;
+    }
+    public function actionUpdate() {
+        if (!Yii::$app->user->can('update-tickets')) {
+            return json_encode(['error'=>'Access Denied!']);
+        }
         if(Yii::$app->request->post()){
            $postValues = Yii::$app->request->post();
-           $activity = new TicketActivity();
-           if(!empty($postValues['ticket_id'] && !empty($postValues['reply-text']))){
-               $ticket = Ticket::findOne($postValues['ticket_id']);
-               if(empty($ticket)){
-                   return json_encode(['Invalid request']);
-               }
-               $ticket->ticket_priority = $postValues['ticket_priority'];
-               $type = '';
-               if($postValues['ticket_status'] == "Forward"){
-                   $ticket->ticket_status = "Forward";
-                   $ticket->department_id = $postValues['depart'];
-                   $ticket->forwarded_to = $postValues['user'];
-                   $ticket->status_updated_on = date('Y-m-d H:i:s');
-                   $userb = User::find()->select(['id','username','email'])->where(['id'=>$postValues['user']])->one();
-                   $activityMessage = ($postValues['reply-to-user'] == 'yes') ? Yii::$app->user->identity->username." forwarded this ticket to ".$userb->username." with reply to user." : \Yii::$app->user->identity->username." forwarded this ticket to ".$userb->username." with note.";
-                   $type = ($postValues['reply-to-user'] == 'yes') ? "response" : "forward";
-               }else{
-                   $ticket->ticket_status = $postValues['ticket_status'];
-                   $activityMessage = ($postValues['reply-to-user'] == 'yes') ? Yii::$app->user->identity->username." replied to customer." : Yii::$app->user->identity->username." posted a note.";
-                   $type = ($postValues['reply-to-user'] == 'yes') ? "response" : "note";
-               }
-               $ticket->updated_on = date('Y-m-d H:i:s');
-               $ticket->updated_by = Yii::$app->user->identity->id;
-               if($ticket->validate()){
-                   $ticket->save();
-               }else{
-                   return json_encode(['Invalid request']);
-               }
-               
-               $activity = $activity->insertActivity(Yii::$app->user->identity->id,$ticket->ID,$postValues['reply-text'],$activityMessage,$ticket->ticket_status,$ticket->ticket_priority,$type);
-               $activity->toArray(); 
-              return json_encode(['subject'=>$activity->subject,'text'=>$activity->text,'status'=>$activity->status,'priority'=>$activity->priority,'type'=>$activity->type,'created_by'=>Yii::$app->user->identity->username,'created_on'=>$activity->created_on]);  
-           } 
+           return Ticket::updateTicket($postValues, Yii::$app->user->identity->id, Yii::$app->user->identity->username); 
+        }else{
+            return json_encode(['Accept Only Post Request']);
         }
-        return json_encode(['Invalid request']);
+        
     }
     public function actionDashboard() {
         return $this->render('dashboard', [

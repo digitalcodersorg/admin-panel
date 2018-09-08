@@ -6,7 +6,8 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
-
+use common\models\User;
+use common\models\EmailNotification;
 /**
  * Site controller
  */
@@ -30,12 +31,27 @@ class SiteController extends Controller
                         'allow' => true,
                         'roles' => ['@'],
                     ],
+                    [
+                        'actions' => ['changepasswords', 'changepasswords'],
+                        'allow' => true,
+                        'roles' => ['?'],
+                    ],
+                    [
+                        'actions' => ['resetpassword', 'resetpassword'],
+                        'allow' => true,
+                        'roles' => ['?'],
+                    ],
+                    [
+                        'actions' => ['forgotpassword', 'forgotpassword'],
+                        'allow' => true,
+                        'roles' => ['?'],
+                    ],
                 ],
             ],
             'verbs' => [
                 'class' => VerbFilter::className(),
                 'actions' => [
-                    'logout' => ['post'],
+                    'logout' => ['post','get'],
                 ],
             ],
         ];
@@ -96,5 +112,63 @@ class SiteController extends Controller
         Yii::$app->user->logout();
 
         return $this->goHome();
+    }
+    /*     * *******************************************************
+     *       Forgot Password                           Starts *
+     * ******************************************************** */
+
+    public function actionForgotpassword() {
+        if (!empty(Yii::$app->request->post())) {
+            $userModel = new User();
+            $userDetail = $userModel->getUserDetailByEmailId(Yii::$app->request->post()['emailId']);
+            if (!empty($userDetail)) {
+            $email = EmailNotification::addEmailToSend([
+                'to_emails'=>array($userDetail['email'] => $userDetail['username']),
+                'to_name'=>$userDetail['username'],
+                'subject'=>'Reset Password ',
+                'email_body'=>json_encode([
+                    'userName' => $userDetail['username'],
+                    'userResetToken' => $userDetail['password_reset_token'],
+                    'userEmail' => $userDetail['email'],
+                ]),
+                'template_name'=>'forgot_password',
+                'created_by'=>$userDetail['id'],
+            ]);
+            return ($email) ? json_encode('Password reset link sent to your registered email id.') : json_encode('Internal Error');
+                
+            } else {
+                return json_encode('Invalid email id.');
+            }
+        } else {
+            return $this->render("forgotpassword");
+        }
+    }
+
+    public function actionResetpassword($email, $re) {
+        return $this->render("new_password", ['email' => $email, 're' => $re]);
+    }
+
+    public function actionChangepasswords() {
+        if (!empty(Yii::$app->request->post())) {
+            $userModel = new User();
+            $postValues = Yii::$app->request->post();
+            $updatePassword = $userModel->updatePassword($postValues['email'], $postValues['re'], $postValues['password']);
+            return $updatePassword;
+        }
+    }
+
+    /*     * *******************************************************
+     *       Forgot Password                           Starts *
+     * ******************************************************** */
+
+    /*     * *******************************************************
+     *       Error Exception                           Starts *
+     * ******************************************************** */
+
+    public function actionError() {
+        $exception = Yii::$app->errorHandler->exception;
+        if ($exception !== null) {
+            return $this->render('error', ['exception' => $exception]);
+        }
     }
 }
