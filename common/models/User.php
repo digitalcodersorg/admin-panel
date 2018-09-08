@@ -108,24 +108,24 @@ class User extends ActiveRecord implements IdentityInterface {
         return $find->orderBy(['updated_at' => SORT_DESC])->all();
     }
 
-    public function getUsermeta($user_id = '', $key = '', $single = false) {
-        if (!empty($user_id)) {
-            $db = \Yii::$app->db;
-            $key_sql = !empty($key) ? 'and meta_key = :meta_key' : '';
-            $sql = "select meta_key,meta_value from pnl_user_meta where user_id = :user_id " . $key_sql;
-            $command = $db->createCommand($sql);
-            $command->bindValue(':user_id', $user_id);
-            if (!empty($key)) {
-                $command->bindValue(':meta_key', $key);
-                $result = $command->queryOne();
-                return $result['meta_value'];
-            }else{
-                return $result = $command->queryAll();
-            }
-        } else {
-            return NULL;
-        }
-    }
+//    public function getUsermeta($user_id = '', $key = '', $single = false) {
+//        if (!empty($user_id)) {
+//            $db = \Yii::$app->db;
+//            $key_sql = !empty($key) ? 'and meta_key = :meta_key' : '';
+//            $sql = "select meta_key,meta_value from pnl_user_meta where user_id = :user_id " . $key_sql;
+//            $command = $db->createCommand($sql);
+//            $command->bindValue(':user_id', $user_id);
+//            if (!empty($key)) {
+//                $command->bindValue(':meta_key', $key);
+//                $result = $command->queryOne();
+//                return $result['meta_value'];
+//            }else{
+//                return $result = $command->queryAll();
+//            }
+//        } else {
+//            return NULL;
+//        }
+//    }
 
     /**
      * @inheritdoc
@@ -373,7 +373,56 @@ class User extends ActiveRecord implements IdentityInterface {
         $result = $command->execute();
         return $result;
     }
-
+    public function addUserMeta($meta_key, $value, $user_id){
+            if(!empty($meta_key) && !empty($user_id)){
+            $db = \Yii::$app->db;
+            $sql = "insert into pnl_user_meta(user_id,meta_key,meta_value) values(:user_id,:meta_key,:meta_value)";
+            $command = $db->createCommand($sql);
+            $command->bindValue(':meta_key', $meta_key);
+            $command->bindValue(':meta_value', $value);
+            $command->bindValue(':user_id', $user_id);
+            $result = $command->execute();
+            return $result;
+            }else{
+                return false;
+            }
+    }
+    public function updateUserMeta($meta_key, $value, $user_id){
+            if(!empty($meta_key) && !empty($user_id)){
+            $db = \Yii::$app->db;
+            $sql = "update pnl_user_meta set meta_value = :meta_value where meta_key = :meta_key and user_id = :user_id";
+            $command = $db->createCommand($sql);
+            $command->bindValue(':meta_key', $meta_key);
+            $command->bindValue(':meta_value', $value);
+            $command->bindValue(':user_id', $user_id);
+            $result = $command->execute();
+            return $result;
+            }else{
+                return false;
+            }
+    }
+    public function getUserMeta($uid = '', $key = ''){
+        $db = \Yii::$app->db;
+        if(!empty($key) && !empty($uid)){
+            $sql = "select * from pnl_user_meta where meta_key = :key and user_id = :uid";
+            $command = $db->createCommand($sql);
+            $command->bindValue(':key', $key);
+            $command->bindValue(':uid', $uid);
+            $result = $command->queryOne();
+            return $result['meta_value'];
+        }else if(!empty($key) && empty($key)){
+            $sql = "select * from pnl_user_meta where meta_key = :key";
+            $command = $db->createCommand($sql);
+            $command->bindValue(':key', $key);
+            return $result = $command->queryAll();
+        }else if(empty($key) && !empty($key)){
+            $sql = "select * from pnl_user_meta where user_id = :uid";
+            $command = $db->createCommand($sql);
+            $command->bindValue(':uid', $uid);
+            return $result = $command->queryAll();
+        }
+        return NULL;
+    }
     /**     * *************************************************
      *       Profile Update By User                 Ends *
      * *************************************************** */

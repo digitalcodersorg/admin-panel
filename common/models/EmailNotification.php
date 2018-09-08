@@ -39,7 +39,7 @@ class EmailNotification extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['template_name', 'to_email_id'], 'required'],
+            [['template_name', 'to_email_id','to_name','subject','email_body'], 'required'],
             [['to_email_id', 'email_body'], 'string'],
             [['created_on'], 'safe'],
             [['created_by'], 'integer'],
@@ -79,5 +79,27 @@ class EmailNotification extends \yii\db\ActiveRecord
     public function getCreatedBy()
     {
         return $this->hasOne(User::className(), ['id' => 'created_by']);
+    }
+    
+    
+    public static function addEmailToSend($options = []) {
+        $email = new EmailNotification();
+        $email->from_email_id = empty($options['from_email']) ? \Yii::$app->params['supportEmail'] : $options['from_email'];
+        $email->from_name = empty($options['from_name']) ? \Yii::$app->params['supportName'] : $options['from_name'];
+        $email->to_name = $options['to_name'];
+        $email->to_email_id = json_encode($options['to_emails']);
+        $email->template_name = $options['template_name'];
+        $email->subject = $options['subject'];
+        $email->email_body = $options['email_body'];
+        $email->created_by = $options['created_by'];
+        $email->cc = empty($options['cc']) ? NULL : $options['cc'];
+        $email->bcc = empty($options['bcc']) ? NULL : $options['bcc'];
+        if($email->validate()){
+            $email->save();
+            return true;
+        }else{
+            return false;
+        }
+      
     }
 }

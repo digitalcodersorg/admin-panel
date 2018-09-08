@@ -314,7 +314,13 @@ input[type="radio"]:disabled + .label-text:before{
 span.checkbox-text {
     font-size: 13px;
     color: #73879C;
+    position: absolute;
+    width: 100px;
+    top: 8px;
 }
+/*.modal{
+    z-index: 1010 !important;
+}*/
 /****************************/
 .table-borderless td {
     border: none !important;
@@ -365,6 +371,8 @@ img.img-responsive.activity-avatar {
     margin-right: -15px;
     margin-top: -9px;
     min-height: 590px;
+    max-height: 590px;
+    overflow-y: scroll;
 }
 .activity:hover {
     background: rgba(236, 236, 236, 0.8);
@@ -437,4 +445,37 @@ address p {
 }
 tr.view-ticket.response {
     background: rgba(220, 224, 255, 0.65) !important;
+}
+p.text-error {
+    color: #c93d3d;
+}
+.error-summary {
+    color: #de2a2a;
+}
+.remove-data {
+    color: #fff !important;
+    padding: 2px 8px !important;
+    margin-bottom: 0px !important;
+    margin-right: -10px !important;
+}
+.modal-footer {
+    padding: 10px;
+    text-align: right;
+    border-top: 1px solid #e5e5e5;
+}
+#myProgress {
+    width: 100%;
+    background-color: #fff;
+    position: fixed;
+    z-index: 99;
+    top:0px;
+}
+
+#myBar {
+  width: 0%;
+  height: 3px;
+  background-color: #204d74;
+  text-align: center;
+  line-height: 30px;
+  color: white;
 }

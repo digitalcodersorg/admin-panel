@@ -38,7 +38,7 @@ class UserAddress extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'country', 'state', 'zip'], 'integer'],
-            [['address_line1', 'address_line2', 'city', 'land_mark', 'email'], 'string', 'max' => 255],
+            [['title','address_line1', 'address_line2', 'city', 'land_mark', 'email'], 'string', 'max' => 255],
             [['type', 'phone_no'], 'string', 'max' => 50],
         ];
     }
