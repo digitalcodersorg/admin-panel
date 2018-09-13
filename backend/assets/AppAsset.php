@@ -17,7 +17,7 @@ class AppAsset extends AssetBundle
         //'css/jquery.mCustomScrollbar.min.css',
         'css/chosen/chosen.css',
         'css/bootstrap-duallistbox.css',
-        'css/site.css?15',
+        'css/site.css?22',
     ];
     public $js = [
         'js/moment.min.js',

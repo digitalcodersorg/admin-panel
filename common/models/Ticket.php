@@ -321,5 +321,50 @@ class Ticket extends \yii\db\ActiveRecord {
         }
         return json_encode(['error'=>'Reply Cannot Be Blank']);
     }
+    public static function getChartData($status = ''){
+        $connection = Yii::$app->db;
+        $firstDateOflastMonth = date('Y-m-d 00:00:00', strtotime("first day of previous month"));
+        $lastDateOfLastMonth = date('Y-m-d 23:59:59', strtotime('last day of previous month'));
+        $condStatus = "";
+        $condStatus1 = '';
+        if (!empty($status)) {
+            $condStatus = " and t.ticket_status = :status";
+            $condStatus1 = " WHERE t.ticket_status = :status";
+        }
+        $cq1 = '';
+        $cq2 = '';
+//        if ($status == '' || $status == 'Closed') {
+//            $cq1 = '+(SELECT sum(`annual`) FROM tbl_cms_user)';
+//            $cq2 = '+(SELECT sum(`all`) FROM tbl_cms_user)';
+//        }
+        $sql = "select (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE (t.created_on between DATE_FORMAT(NOW() ,'%Y-%m-%d') AND NOW())
+                 " . $condStatus . ") as counttoday,
+                  (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE (date(created_on) =date(CURDATE() - INTERVAL 1 DAY))
+                 " . $condStatus . ") as countyesterday,
+                  (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE (t.created_on between DATE_FORMAT(NOW() ,'%Y-%m-01') AND NOW())
+                 " . $condStatus . ") as countthismonth,
+                (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE (t.created_on between DATE_FORMAT(NOW() ,'" . $firstDateOflastMonth . "') AND DATE_FORMAT(NOW() ,'" . $lastDateOfLastMonth . "'))
+                 " . $condStatus . ") as countpreviousmonth,
+                (SELECT COUNT(t.ID) FROM pnl_tickets t
+                WHERE (t.created_on between DATE_FORMAT(NOW() ,'%Y-01-01') AND NOW()) " . $condStatus . ")" . $cq1 . " as countannual,
+                (SELECT COUNT(t.ID) FROM pnl_tickets t
+                 " . $condStatus1 . " )" . $cq2 . " as countall;";
+        
+        $command = $connection->createCommand($sql);
+        if (!empty($status)) {
+            $command->bindValue(':status', $status);
+        }
+        $ticketArray = $command->queryAll();
+        $statusArray = [];
+        if (!empty($ticketArray)) {
+            foreach ($ticketArray[0] as $key => $ticket) {
+                $statusArray[] = intval($ticket);
+            }
+        }
+        return $statusArray;
 
+    }
+    public static function getCounts(){
+        
+    }
 }

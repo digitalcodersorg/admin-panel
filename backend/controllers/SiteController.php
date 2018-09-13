@@ -7,6 +7,8 @@ use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
 use common\models\User;
+use common\models\Subscription;
+use common\models\Ticket;
 use common\models\EmailNotification;
 /**
  * Site controller
@@ -76,7 +78,23 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $subscription_count['all'] = Subscription::getCounts('','count');
+        $subscription_count['active'] = Subscription::getCounts('Active','count');
+        $subscription_count['suspend'] = Subscription::getCounts('Suspend','count');
+        
+        $tickets_count['all'] = Ticket::search(['status'=>''],'count');
+        $tickets_count['open'] = Ticket::search(['status'=>'Open'],'count');
+        $tickets_count['closed'] = Ticket::search(['status'=>'Closed'],'count');
+        $tickets_count['resolved'] = Ticket::search(['status'=>'Resolve'],'count');
+        $tickets_count['inprocess'] = Ticket::search(['status'=>'Inprocess'],'count');
+        ///echo date('Y-m-d',strtotime("first day of this month"));
+        $user_count['all'] = User::getCount('', 'count');
+        $user_count['this_month'] = User::getCount(date('Y-m-d',strtotime("first day of this month")), 'count');
+        return $this->render('index',[
+            'subscription' => $subscription_count, 
+            'tickets_count' => $tickets_count, 
+            'user_count' => $user_count, 
+        ]);
     }
 
     /**

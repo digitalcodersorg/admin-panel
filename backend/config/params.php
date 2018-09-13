@@ -4,7 +4,7 @@ return [
     'supportName' => 'Admin',
     'userLevel' => ['1' => 'Level 1', '2' => 'Level 2', '3' => 'Level 3', '4' => 'Level 4'],
     'status'=>['Open'=>'Open','Resolve'=>'Resolve','Inprocess'=>'Inprocess','Closed'=>'Closed','Forward'=>'Forward'],
-    'status_color'=>['Open'=>'#cf2929','Resolve'=>'#FD6A02','Inprocess'=>'#21a808','Closed'=>'#9E7CD7','Forward'=>'Forward'],
+    'status_color'=>['Open'=>'#cf2929','Resolve'=>'#FD6A02','Inprocess'=>'#21a808','Closed'=>'#9E7CD7','Forward'=>'#5bc0de'],
     'priority'=>['Low'=>'Low','Normal'=>'Normal','High'=>'High','Critical'=>'Critical',],
     'priority_color'=>['Low'=>'#f9f100','Normal'=>'#30ef00d1','High'=>'#428bca','Critical'=>'#fd0505c7',],
     'ticket_subjects'=>[

@@ -98,7 +98,9 @@ $ticket_subjects = Yii::$app->params['ticket_subjects'];
             <?php $rr = isset($q['reponse']) ? $q['reponse'] : '' ?>
             <button class="btn btn-primary btn-sm filter-ticket <?= ($rr == 'true') ? 'active' : ''?>" onclick="javascript:void(0)" data-target="response-received" data-filter="true"><i class="fa fa-comments" aria-hidden="true"></i></button>
             <input type="hidden" name="reponse" value="<?= $rr?>" id="response-received"/>
+            <?php if($role == 'admin' ){?>
             <button class="btn btn-primary btn-sm">Download <i class="fa fa-arrow-down" aria-hidden="true"></i></button>
+            <?php }?>
             <?= Html::a(Yii::t('app', 'Clear'), ['/tickets'], ['class' => 'btn btn-primary btn-sm']); ?>
         </form>
 

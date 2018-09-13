@@ -204,7 +204,7 @@ $sub_status = ['Active','Pause','Suspend','On Hold','Expired','Renewed','Cancell
                                             <?php }?>
                                         </select>
                                     </div>
-                                <?php echo $this->render('../widgets/_addressForm', ['form' => $form, 'addressModel' => $billing, 'label' => "AMC Address", 'size' => 12, 'minimize' => true, 'no' => 3]); ?>
+                                <?php //echo $this->render('../widgets/_addressForm', ['form' => $form, 'addressModel' => $billing, 'label' => "AMC Address", 'size' => 12, 'minimize' => true, 'no' => 3]); ?>
                                 </div>
 <?php ActiveForm::end(); ?>
                             </div>
@@ -213,14 +213,15 @@ $sub_status = ['Active','Pause','Suspend','On Hold','Expired','Renewed','Cancell
                                     <span>Add Device Information</span> 
                                     <span data-toggle="tooltip" data-placement="right" title="Add upto 10 Devices"><i class="fa fa-info-circle"></i></span>
                                 </button>
-                                <div class="table-responsive hide">
-                                    <table class="table table-striped jambo_table bulk_action">
+                                <div class="table-responsive ">
+                                    <table class="table table-striped jambo_table bulk_action itemTable">
                                         <thead>
                                             <tr class="headings">
                                                 <th class="column-title">Type </th>
                                                 <th class="column-title">Name</th>
-                                                <th class="column-title">Head</th>
-                                                <th class="column-title">Updated On</th>
+                                                <th class="column-title">Serial No</th>
+                                                <th class="column-title">Quantity</th>
+                                                <th class="column-title">MAC</th>
                                                 <th class="column-title no-link last"><span class="nobr">Action</span>
                                                 </th>
 
@@ -228,6 +229,45 @@ $sub_status = ['Active','Pause','Suspend','On Hold','Expired','Renewed','Cancell
                                         </thead>
 
                                         <tbody>
+                                            <tr>
+                                                <td>PC</td>
+                                                <td>PC - 1232</td>
+                                                <td>SDA34554434</td>
+                                                <td>1</td>
+                                                <td>
+                                                    <p>LAN - 32j.32d3.23d.323</p>
+                                                    <p>Wifi - 32.we4.wt53.we56</p>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-primary btn-sm"><i class="fa fa-eye" aria-hidden="true"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>PC</td>
+                                                <td>PC - 1232</td>
+                                                <td>SDA34554434</td>
+                                                <td>1</td>
+                                                <td>
+                                                    <p>LAN - 32j.32d3.23d.323</p>
+                                                    <p>Wifi - 32.we4.wt53.we56</p>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-primary btn-sm"><i class="fa fa-eye" aria-hidden="true"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>PC</td>
+                                                <td>PC - 1232</td>
+                                                <td>SDA34554434</td>
+                                                <td>1</td>
+                                                <td>
+                                                    <p>LAN - 32j.32d3.23d.323</p>
+                                                    <p>Wifi - 32.we4.wt53.we56</p>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-primary btn-sm"><i class="fa fa-eye" aria-hidden="true"></i></button>
+                                                </td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -266,7 +306,7 @@ $sub_status = ['Active','Pause','Suspend','On Hold','Expired','Renewed','Cancell
                     <input type="hidden" name="amc-no" value="" id="device-form-amc-no"/>
                     <div class="form-group col-md-4 col-sm-4 col-xs-12">
                         <label for="type">Device Type</label>
-                        <select name="type" id="type" class="form-control">
+                        <select name="type" id="type" class="form-control required-input">
                             <option value="">Select Device Type</option>
                             <option value="Laptop">Laptop</option>
                             <option value="Desktop">Desktop</option>
@@ -279,15 +319,15 @@ $sub_status = ['Active','Pause','Suspend','On Hold','Expired','Renewed','Cancell
                     </div>
                     <div class="form-group col-md-4 col-sm-4 col-xs-12">
                         <label for="name">Device Name</label>
-                        <input type="text" id="name" name="name" class="form-control" />
+                        <input type="text" id="name" name="name" class="form-control required-input" />
                     </div>
                     <div class="form-group col-md-4 col-sm-4 col-xs-12">
                         <label for="name">Serial no/Service Tag no.</label>
-                        <input type="text" id="serial" name="serial" class="form-control" />
+                        <input type="text" id="serial" name="serial" class="form-control required-input" />
                     </div>
                     <div class="form-group col-md-4 col-sm-4 col-xs-12">
                         <label for="name">Quantity</label>
-                        <input type="number" id="quantity" name="quantity" class="form-control" />
+                        <input type="number" id="quantity" name="quantity" class="form-control required-input" />
                     </div>
                     <div class="form-group col-md-4 col-sm-4 col-xs-12">
                         <label for="mac-address-lan">MAC Address Lan (Optional)</label>

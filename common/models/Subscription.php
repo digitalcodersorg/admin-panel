@@ -119,4 +119,15 @@ class Subscription extends \yii\db\ActiveRecord
     {
         return $this->hasMany(SubscriptionItem::className(), ['subcription_id' => 'ID']);
     }
+    public static function getCounts($status = '', $type = ''){
+        $search = Subscription::find();
+        if(!empty($status)){
+            $search->where(['`status`'=>$status]);
+        }
+        if($type == 'count'){
+            return $search->count();
+        }
+        
+        return $search->asArray()->all();
+    }
 }

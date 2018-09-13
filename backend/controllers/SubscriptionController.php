@@ -4,6 +4,8 @@ namespace backend\controllers;
 use yii\web\Controller;
 use common\models\Subscription;
 use common\models\SubscriptionItem;
+use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 use common\models\UserAddress;
 class SubscriptionController extends Controller
 {
@@ -44,6 +46,8 @@ class SubscriptionController extends Controller
         
     }
     public function actionUpdateSubscription(){
-        
+       
+        return json_encode(['t']);
     }
+    
 }

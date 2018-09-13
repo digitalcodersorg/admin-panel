@@ -17,6 +17,15 @@ $(document).ready(function () {
         ordering: true,
         aaSorting: []
     });
+    $('.itemTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        bLengthChange: false,
+        paging: true,
+        searching: true,
+        ordering: true,
+        aaSorting: []
+    });
     $('.calender').datetimepicker({
         format: 'YYYY-MM-DD',
         debug: false
@@ -44,6 +53,8 @@ $(document).ready(function () {
         }
 
     });
+    /************************************/
+
     //FROM TO DATE SELECTOR By ID
     $('#FrDate').datetimepicker({
         format: 'YYYY-MM-DD HH:mm',
@@ -125,74 +136,7 @@ $(document).ready(function () {
             }
         }
     }
-    /***********************CHART SECTION**********************************/
-    if ($("#dashboard-chart").length) {
-        Highcharts.chart('dashboard-chart', {
-            chart: {
-                type: 'column'
-            },
-            title: {
-                text: 'Monthly Average Rainfall'
-            },
-            subtitle: {
-                text: 'Source: WorldClimate.com'
-            },
-            xAxis: {
-                categories: [
-                    'Jan',
-                    'Feb',
-                    'Mar',
-                    'Apr',
-                    'May',
-                    'Jun',
-                    'Jul',
-                    'Aug',
-                    'Sep',
-                    'Oct',
-                    'Nov',
-                    'Dec'
-                ],
-                crosshair: true
-            },
-            yAxis: {
-                min: 0,
-                title: {
-                    text: 'Rainfall (mm)'
-                }
-            },
-            tooltip: {
-                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-                        '<td style="padding:0"><b>{point.y:.1f} mm</b></td></tr>',
-                footerFormat: '</table>',
-                shared: true,
-                useHTML: true
-            },
-            plotOptions: {
-                column: {
-                    pointPadding: 0.2,
-                    borderWidth: 0
-                }
-            },
-            series: [{
-                    name: 'Tokyo',
-                    data: [49.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4]
 
-                }, {
-                    name: 'New York',
-                    data: [83.6, 78.8, 98.5, 93.4, 106.0, 84.5, 105.0, 104.3, 91.2, 83.5, 106.6, 92.3]
-
-                }, {
-                    name: 'London',
-                    data: [48.9, 38.8, 39.3, 41.4, 47.0, 48.3, 59.0, 59.6, 52.4, 65.2, 59.3, 51.2]
-
-                }, {
-                    name: 'Berlin',
-                    data: [42.4, 33.2, 34.5, 39.7, 52.6, 75.5, 57.4, 60.4, 47.6, 39.1, 46.8, 51.1]
-
-                }]
-        });
-    }
 
     /**********************************/
     tinymce.init({
@@ -251,31 +195,130 @@ function clearForm(form_id) {
 /*********************************/
 $(document).ready(function () {
     (function (xhr) {
-        if ($('.fetch-amc').length) {
-            $('.fetch-amc').click(function () {
-                $this = $(this);
-                window.XMLHttpRequest = xhr;
-                var amc = $(this).data('amc');
+        /*******************************/
+        if ($('.to_do').length) {
+            $('.load-todo').click(function () {
+                var user = $('#uid').val();
+                getTodo({user: user, page: 1});
+            });
+        }
+        $('.todo-check').click(function(){
+            if ($(this).prop("checked") === true) {
+                
+            }else{
+                
+            }
+        });
+        $('.todo-text').keypress(function (e) {
+            if (e.which == 13) {
+                var text = $(this).val();
+                var user_id = $(this).data('user');
+                if (text.trim() === "") {
+                    alert("Write something to remember.");
+                    return;
+                }
+                var $this = $(this);
+                $this.val("");
+                updateTodo({text: text, user_id: user_id, status: 'pending'});
+            }
+        });
+        var updateTodo = (props) => {
+            window.XMLHttpRequest = xhr;
                 $.ajax({
-                    url: JS_BASE_URL + "subscription/get-info",
+                    url: JS_BASE_URL + "api/update-todo",
                     type: 'POST',
-                    data: {'sub_no': amc},
+                    data: {text: props.text, user: props.user_id, status: props.status},
                     beforeSend: function (xhr) {
-                        $('#amc-info').block({message: $('#block-ui')});
+                        $('#todo-save').block({message: $('#block-ui')});
                     },
                     success: function (data, textStatus, jqXHR) {
-                        $this.parent().siblings().removeClass('active');
-                        $this.parent().addClass('active');
-                        $('#amc-info').unblock();
+                        var data = jQuery.parseJSON(data);
+                        $('.todo-template .todo-text').val(text);
+                        if(data.error !== "0"){
+                            alert('Internal Error');
+                            return;
+                        }
+                        $('.todo-template input[type="hidden"]').val(data.id);
+                        
+                        var $template = $('.todo-template'),
+                                $clone = $template
+                                .clone()
+                                .removeClass('hide')
+                                .addClass('removable')
+                                .removeClass('todo-template');
+                        //.attr("id", new_id);
+                        if ($("ul.to_do").children().length > 11) {
+                            console.log('remove some element');
+                        }
+                        $clone.insertAfter($template);
+                        $('.todo-delete').unbind('click');
+                        $('.todo-delete').click(function () {
+                            if (confirm("Are you sure want to delete?")) {
+                                console.log('delete');
+                            }
+                        });
                     },
                     error: function (jqXHR, textStatus, errorThrown) {
-                        alert('Internal Error, Please try again.');
-                        $('#amc-info').unblock();
+                        console.log('Internal Error, Please try again.');
+                        $('#todo-save').unblock();
                     }
                 });
                 window.XMLHttpRequest = null;
-            });
         }
+        var getTodo = (props) => {
+            window.XMLHttpRequest = xhr;
+            $.ajax({
+                url: JS_BASE_URL + "api/get-todo",
+                type: 'GET',
+                data: {uid: props.user, page: props.page},
+                beforeSend: function (xhr) {
+                    $('#todo-save').block({message: $('#block-ui')});
+                },
+                success: function (data, textStatus, jqXHR) {
+                    var data = jQuery.parseJSON(data);
+                    $('.removable').remove();
+                    if(data.data.length <= 0){
+                        alert('Nothing Found!');   
+                    }
+                    $.each(data.data, function (k, v) {
+                        console.log(v);
+                        $('.todo-template input[type="text"]').val(v.text);
+                        $('.todo-template input[type="hidden"]').val(v.ID);
+                        if (v.status === 'completed') {
+                            $('.todo-template .todo-check')[0].checked = true;
+                        } else {
+                            $('.todo-template .todo-check')[0].checked = false;
+                        }
+
+                        var $template = $('.todo-template'),
+                                $clone = $template
+                                .clone()
+                                .removeClass('hide')
+                                .addClass('removable')
+                                .removeClass('todo-template');
+                        if ($("ul.to_do").children().length > 11) {
+                            console.log('remove some element');
+                        }
+                        $clone.insertBefore($template);
+                    });
+                    $('.todo-delete').unbind('click');
+                    $('.todo-delete').click(function () {
+                        if (confirm("Are you sure want to delete?")) {
+                            console.log($(this).siblings('input[type="hidden"]').val());
+                            
+                        }
+                    });
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log('Internal Error, Please try again.');
+                    $('#todo-save').unblock();
+                }
+            });
+            window.XMLHttpRequest = null;
+
+        }
+        /*******************************/
+
         if ($('#ticket_status').length) {
             $('#ticket_status').change(function () {
 
@@ -380,7 +423,6 @@ $(document).ready(function () {
                     error: function (jqXHR, textStatus, errorThrown) {
                         $.unblockUI();
                         alert('Internal Error, Please try again.');
-                        $('#amc-info').unblock();
                     }
                 });
                 window.XMLHttpRequest = null;
@@ -650,8 +692,8 @@ $(document).ready(function () {
             window.XMLHttpRequest = xhr;
             $.ajax({
                 url: JS_BASE_URL + 'subscription/get-subscription',
-                type: 'POST',
-                data: $('#update-user-data').serializeArray(),
+                type: 'GET',
+                data: {sid: 1},
                 beforeSend: function () {
                     $.blockUI({message: $('#block-ui')});
                 },
@@ -690,4 +732,74 @@ function getCookie(cname) {
         }
     }
     return "";
+}
+
+/***********************CHART SECTION**********************************/
+document.addEventListener('DOMContentLoaded', function () {
+    if ($("#dashboard-chart").length) {
+        chart = Highcharts.chart('dashboard-chart', {
+            chart: {
+                type: 'column',
+                events: {
+                    load: requestData
+                }
+            },
+            title: {
+                text: 'Support Tickets Overview'
+            },
+            credits: {
+                enabled: false
+            },
+//            subtitle: {
+//                text: 'Source: WorldClimate.com'
+//            },
+            xAxis: {
+                categories: [
+                    'Today',
+                    'Yesterday',
+                    'This Month',
+                    'Previous Month',
+                    'This Year',
+                    'All'
+                ],
+                crosshair: true
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Tickets'
+                }
+            },
+            tooltip: {
+                headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                        '<td style="padding:0"><b>{point.y:.1f}</b></td></tr>',
+                footerFormat: '</table>',
+                shared: true,
+                useHTML: true
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0.2,
+                    borderWidth: 0
+                }
+            },
+            series: []
+        });
+    }
+});
+function requestData() {
+    $.ajax({
+        url: JS_BASE_URL + 'api/get-chart-data',
+        type: "GET",
+        dataType: "json",
+        success: function (data) {
+            $.each(data, function (d, v) {
+                chart.addSeries(v);
+            });
+
+            //chart.series = data;
+        },
+        cache: false
+    });
 }

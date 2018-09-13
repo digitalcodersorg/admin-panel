@@ -13,8 +13,8 @@ use Yii;
  * @property string $name
  * @property string $serial_no
  * @property int $quantity
- * @property string $mac-lan
- * @property string $mac-wifi
+ * @property string $mac_lan
+ * @property string $mac_wifi
  * @property string $desk
  * @property string $phone
  * @property string $email
@@ -45,7 +45,7 @@ class SubscriptionItem extends \yii\db\ActiveRecord
         return [
             [['subcription_id', 'quantity', 'created_by', 'updated_by'], 'integer'],
             [['created_on', 'updated_on'], 'safe'],
-            [['type', 'mac-lan', 'mac-wifi', 'desk', 'phone'], 'string', 'max' => 50],
+            [['type', 'mac_lan', 'mac_wifi', 'desk', 'phone'], 'string', 'max' => 50],
             [['name', 'serial_no', 'email'], 'string', 'max' => 255],
             [['subcription_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subscription::className(), 'targetAttribute' => ['subcription_id' => 'ID']],
             [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => CmsUser::className(), 'targetAttribute' => ['created_by' => 'id']],
@@ -65,8 +65,8 @@ class SubscriptionItem extends \yii\db\ActiveRecord
             'name' => Yii::t('app', 'Name'),
             'serial_no' => Yii::t('app', 'Serial No'),
             'quantity' => Yii::t('app', 'Quantity'),
-            'mac-lan' => Yii::t('app', 'Mac Lan'),
-            'mac-wifi' => Yii::t('app', 'Mac Wifi'),
+            'mac_lan' => Yii::t('app', 'Mac Lan'),
+            'mac_wifi' => Yii::t('app', 'Mac Wifi'),
             'desk' => Yii::t('app', 'Desk'),
             'phone' => Yii::t('app', 'Phone'),
             'email' => Yii::t('app', 'Email'),
@@ -99,5 +99,46 @@ class SubscriptionItem extends \yii\db\ActiveRecord
     public function getUpdatedBy()
     {
         return $this->hasOne(CmsUser::className(), ['id' => 'updated_by']);
+    }
+    public static function insertItem($postData = []){
+        $subsItem = new SubscriptionItem(); 
+        $subsItem->subcription_id = $postData['subcription_id'];
+        $subsItem->type = $postData['type'];
+        $subsItem->name = $postData['name'];
+        $subsItem->serial_no = $postData['serial_no'];
+        $subsItem->quantity = $postData['quantity'];
+        $subsItem->mac_lan = $postData['mac_lan'];
+        $subsItem->mac_wifi = $postData['mac_wifi'];
+        $subsItem->desk = $postData['desk'];
+        $subsItem->phone = $postData['phone'];
+        $subsItem->email = $postData['email'];
+        $subsItem->created_by = $postData['user_id'];
+        $subsItem->updated_by = $postData['user_id'];
+        $subsItem->created_on = date('Y-m-d H:i:s');
+        $subsItem->updated_on = date('Y-m-d H:i:s');
+        if($subsItem->validate()){
+            $subsItem->save();
+            return true;
+        }
+        return false;
+    }
+    public static function updateItem($postData = []){
+        $subsItem = SubscriptionItem::findOne($postData['ID']); 
+        $subsItem->type = ($postData['type'] != $subsItem->type) ? $postData['type'] : $subsItem->type;
+        $subsItem->name = ($postData['name'] != $subsItem->name) ? $postData['name'] : $subsItem->name;
+        $subsItem->serial_no = ($postData['serial_no'] != $subsItem->serial_no) ? $postData['serial_no'] : $subsItem->serial_no;
+        $subsItem->quantity = ($postData['quantity'] != $subsItem->quantity) ? $postData['quantity'] : $subsItem->quantity;
+        $subsItem->mac_lan = ($postData['mac_lan'] != $subsItem->mac_lan)? $postData['mac_lan'] : $subsItem->mac_lan;
+        $subsItem->mac_wifi = ($postData['mac_wifi'] !=  $subsItem->mac_wifi) ? $postData['mac_wifi'] : $subsItem->mac_wifi;
+        $subsItem->desk = ($postData['desk'] != $subsItem->desk) ? $postData['desk'] : $subsItem->desk;
+        $subsItem->phone = ($postData['phone'] != $subsItem->phone)? $postData['phone']: $subsItem->phone;
+        $subsItem->email = ($postData['email'] != $subsItem->email) ? $postData['email']: $subsItem->email;
+        $subsItem->updated_by = $postData['user_id'];
+        $subsItem->updated_on = date('Y-m-d H:i:s');
+        if($subsItem->validate()){
+            $subsItem->save();
+            return true;
+        }
+        return false;
     }
 }

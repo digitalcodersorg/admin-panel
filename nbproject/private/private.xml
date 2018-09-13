@@ -3,14 +3,29 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/xampp/htdocs/admin-panel/backend/views/ticket/view.php</file>
-            <file>file:/C:/xampp/htdocs/admin-panel/backend/controllers/TicketController.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/common/config/params-local.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/views/widgets/_addressForm.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/controllers/SiteController.php</file>
             <file>file:/C:/xampp/htdocs/admin-panel/backend/assets/AppAsset.php</file>
-            <file>file:/C:/xampp/htdocs/admin-panel/common/models/TicketActivity.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/common/config/main-local.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/views/user/update-customer.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/common/models/User.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/views/post/_form.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/views/site/error_1.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/views/site/forgotpassword.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/web/css/site.css</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/common/config/params.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/common/config/main.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/common/models/EmailNotification.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/controllers/PostController.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/common/models/Utility.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/views/widgets/left_nav_panel.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/controllers/SubscriptionController.php</file>
             <file>file:/C:/xampp/htdocs/admin-panel/backend/web/js/admin.js</file>
             <file>file:/C:/xampp/htdocs/admin-panel/backend/controllers/UserController.php</file>
-            <file>file:/C:/xampp/htdocs/admin-panel/backend/views/ticket/ticketlist.php</file>
-            <file>file:/C:/xampp/htdocs/admin-panel/backend/web/css/site.css</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/config/params.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/common/models/UserAddress.php</file>
+            <file>file:/C:/xampp/htdocs/admin-panel/backend/views/widgets/top_nav_panel.php</file>
             <file>file:/C:/xampp/htdocs/admin-panel/common/models/Ticket.php</file>
         </group>
     </open-files>

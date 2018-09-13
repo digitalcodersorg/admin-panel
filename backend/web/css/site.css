@@ -479,3 +479,52 @@ p.text-error {
   line-height: 30px;
   color: white;
 }
+.input-group.todo-item {
+    margin-bottom: 0px;
+}
+.todo-item .input-group-addon {
+    padding: 3px 0px 0px 2px;
+    background: #ffefa4;
+    border: none;
+}
+.todo-item .no-lr-padding {
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-bottom: 0px;
+}
+.todo-text {
+    border: none;
+    background: #ffefa4;
+    box-shadow: none;
+    font-size: 15px;
+    resize: none;
+    color: #92909a;
+    padding-left: 0px;
+    padding-right: 0px;
+    font-family: initial;
+}
+ul.to_do li {
+    padding: 0px;
+    background: #ffefa4;
+}
+.todo-item .form-check label {
+    position: relative;
+    cursor: pointer;
+    color: #ffffff;
+    font-size: 25px;
+    margin-bottom: 0px;
+}
+.todo-delete {
+    position: absolute;
+    right: -6px;
+    z-index: 9;
+    padding: 0px;
+    top: 5px;
+    display: none;
+}  
+.todo-delete .btn.btn-danger {
+    padding: 0px 3px 0px 3px;
+}
+.todo-item:hover .todo-delete{
+      display: block;
+}
