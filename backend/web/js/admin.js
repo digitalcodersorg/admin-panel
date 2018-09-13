@@ -100,7 +100,7 @@ $(document).ready(function () {
         $('.auto-refresh').click(function () {
             if ($(this).is(":checked")) {
                 setCookie("auto-refresh", "yes", 30);
-                autoRefresh(6000);
+                autoRefresh(60000);
             } else {
 
                 setCookie("auto-refresh", 'no', 30);
@@ -109,7 +109,7 @@ $(document).ready(function () {
         var refresh = getCookie("auto-refresh");
         if (refresh !== "" && refresh === 'yes') {
             $('.auto-refresh')[0].checked = true;
-            autoRefresh(6000);
+            autoRefresh(60000);
         }
 
     }
