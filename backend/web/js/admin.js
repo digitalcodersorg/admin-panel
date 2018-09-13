@@ -203,11 +203,16 @@ $(document).ready(function () {
             });
         }
         $('.todo-check').click(function(){
+            var text = "";
+            var user_id = '';
             if ($(this).prop("checked") === true) {
-                
+                updateTodo({text: text, user_id: user_id, status: 'completed'});
             }else{
-                
+                updateTodo({text: text, user_id: user_id, status: 'pending'});
             }
+        });
+        $('.to-do-update').change(function(){
+            
         });
         $('.todo-text').keypress(function (e) {
             if (e.which == 13) {
@@ -239,7 +244,6 @@ $(document).ready(function () {
                             return;
                         }
                         $('.todo-template input[type="hidden"]').val(data.id);
-                        
                         var $template = $('.todo-template'),
                                 $clone = $template
                                 .clone()
