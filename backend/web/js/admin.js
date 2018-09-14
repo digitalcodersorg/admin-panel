@@ -197,23 +197,15 @@ $(document).ready(function () {
     (function (xhr) {
         /*******************************/
         if ($('.to_do').length) {
-            $('.load-todo').click(function () {
-                var user = $('#uid').val();
-                getTodo({user: user, page: 1});
-            });
-        }
-        $('.todo-check').click(function(){
-            var text = "";
-            var user_id = '';
-            if ($(this).prop("checked") === true) {
-                updateTodo({text: text, user_id: user_id, status: 'completed'});
-            }else{
-                updateTodo({text: text, user_id: user_id, status: 'pending'});
-            }
-        });
-        $('.to-do-update').change(function(){
             
-        });
+            $('.load-todo').click(function () {
+                var cpage = $(this).data('current');
+                $('.load-todo').text('Load older notes');
+                getTodo({user: $('#uid').val(), page: (1 + parseInt(cpage))});
+            });
+            getTodo({user: $('#uid').val(), page: 1});
+        }
+
         $('.todo-text').keypress(function (e) {
             if (e.which == 13) {
                 var text = $(this).val();
@@ -224,22 +216,24 @@ $(document).ready(function () {
                 }
                 var $this = $(this);
                 $this.val("");
-                updateTodo({text: text, user_id: user_id, status: 'pending'});
+                updateTodo({text: text, user_id: user_id, status: 'pending', id: ""});
             }
         });
         var updateTodo = (props) => {
             window.XMLHttpRequest = xhr;
-                $.ajax({
-                    url: JS_BASE_URL + "api/update-todo",
-                    type: 'POST',
-                    data: {text: props.text, user: props.user_id, status: props.status},
-                    beforeSend: function (xhr) {
-                        $('#todo-save').block({message: $('#block-ui')});
-                    },
-                    success: function (data, textStatus, jqXHR) {
-                        var data = jQuery.parseJSON(data);
-                        $('.todo-template .todo-text').val(text);
-                        if(data.error !== "0"){
+            $.ajax({
+                url: JS_BASE_URL + "api/update-todo",
+                type: 'POST',
+                data: {text: props.text, user: props.user_id, status: props.status, ID: props.id},
+                beforeSend: function (xhr) {
+                    //$('#todo-save').block({message: $('#block-ui')});
+                },
+                success: function (data, textStatus, jqXHR) {
+                    var data = jQuery.parseJSON(data);
+                    console.log(props.id);
+                    if (props.id === "") {
+                        $('.todo-template .todo-text').val(props.text);
+                        if (data.error !== "0") {
                             alert('Internal Error');
                             return;
                         }
@@ -254,46 +248,104 @@ $(document).ready(function () {
                         if ($("ul.to_do").children().length > 11) {
                             console.log('remove some element');
                         }
-                        $clone.insertAfter($template);
-                        $('.todo-delete').unbind('click');
-                        $('.todo-delete').click(function () {
-                            if (confirm("Are you sure want to delete?")) {
-                                console.log('delete');
-                            }
-                        });
-                    },
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        console.log('Internal Error, Please try again.');
-                        $('#todo-save').unblock();
+                        $clone.insertAfter($('#todo-editor'));
+                        bindTodoDelete();
+                        bindClickOnTodo();
                     }
-                });
-                window.XMLHttpRequest = null;
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log('Internal Error, Please try again.');
+                    $('#todo-save').unblock();
+                }
+            });
+            window.XMLHttpRequest = null;
         }
-        var getTodo = (props) => {
+        var bindTodoDelete = (props) => {
+            $('.todo-delete').unbind('click');
+
+            $('.todo-delete').click(function () {
+                var $elem = $(this);
+                if (confirm("Are you sure want to delete?")) {
+                    deleteTodo({user_id: $('#uid').val(), id: $(this).siblings('input[type="hidden"]').val(), elem: $elem});
+                }
+            });
+        }
+        var deleteTodo = (props) => {
+            window.XMLHttpRequest = xhr;
+            $.ajax({
+                url: JS_BASE_URL + "api/delete-todo",
+                type: 'post',
+                data: {user: props.user_id, ID: props.id},
+                beforeSend: function (xhr) {
+
+                },
+                success: function (data, textStatus, jqXHR) {
+                    props.elem.parents('li.removable').remove();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log('Internal Error, Please try again.');
+                }
+            });
+            window.XMLHttpRequest = null;
+        }
+        var bindClickOnTodo = () => {
+            $('.todo-check').unbind('click');
+            $('.todo-check').click(function () {
+                var text = $(this).parents('.input-group-addon').siblings('.to-do-update').val();
+                var user_id = $('#uid').val();
+                var ID = $(this).parents('.input-group-addon').siblings('input[type="hidden"]').val();
+                if ($(this).prop("checked") === true) {
+                    $(this).parents('.input-group-addon').siblings('.to-do-update').addClass('line-through');
+                    updateTodo({text: text, user_id: user_id, status: 'completed', id: ID});
+                } else {
+                    $(this).parents('.input-group-addon').siblings('.to-do-update').removeClass('line-through');
+                    updateTodo({text: text, user_id: user_id, status: 'pending', id: ID});
+                }
+            });
+            $('.to-do-update').unbind('change');
+            $('.to-do-update').change(function () {
+                updateTodo({text: $(this).val(), user_id: $('#uid').val(), status: '', id: $(this).siblings('input[type="hidden"]').val()});
+            });
+        }
+      //  var getTodo = (props) => {
+        function getTodo(props){
             window.XMLHttpRequest = xhr;
             $.ajax({
                 url: JS_BASE_URL + "api/get-todo",
                 type: 'GET',
                 data: {uid: props.user, page: props.page},
                 beforeSend: function (xhr) {
-                    $('#todo-save').block({message: $('#block-ui')});
+                    //$('#todo-save').block({message: $('#block-ui')});
                 },
                 success: function (data, textStatus, jqXHR) {
                     var data = jQuery.parseJSON(data);
-                    $('.removable').remove();
-                    if(data.data.length <= 0){
-                        alert('Nothing Found!');   
+                    if (data.data.length <= 0) {
+                        alert('Nothing Found!');
+                        $('.load-todo').text('Reset');
+                        $('.load-todo').data('current' ,0);
+                        return;
                     }
-                    $.each(data.data, function (k, v) {
-                        console.log(v);
+                    $('.removable').remove();
+                    if(props.page == 1){
+                        var text = 'Showing 1 to 10 of '+data.total+' notes.';
+                    }else{
+                        let start = (props.page * 10) - 10;
+                        let end = (data.total < (start + 10)) ? data.total : (start + 10);
+                        var text = 'Showing '+ start +' to '+ end +' of '+data.total+' notes.';
+                    }
+                    $('#todo-counts').text(text);
+                    var rever = data.data.reverse();
+                    $.each(rever, function (k, v) {
                         $('.todo-template input[type="text"]').val(v.text);
                         $('.todo-template input[type="hidden"]').val(v.ID);
                         if (v.status === 'completed') {
+                            $('.todo-template input[type="text"]').addClass('line-through');
                             $('.todo-template .todo-check')[0].checked = true;
                         } else {
                             $('.todo-template .todo-check')[0].checked = false;
                         }
-
+                        $('.load-todo').data('current', props.page);
+                        $('.load-todo').data('total', data.total);
                         var $template = $('.todo-template'),
                                 $clone = $template
                                 .clone()
@@ -303,15 +355,11 @@ $(document).ready(function () {
                         if ($("ul.to_do").children().length > 11) {
                             console.log('remove some element');
                         }
-                        $clone.insertBefore($template);
+                        $clone.insertAfter($('#todo-editor'));
+                        bindTodoDelete();
+                        bindClickOnTodo();
                     });
-                    $('.todo-delete').unbind('click');
-                    $('.todo-delete').click(function () {
-                        if (confirm("Are you sure want to delete?")) {
-                            console.log($(this).siblings('input[type="hidden"]').val());
-                            
-                        }
-                    });
+
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.log('Internal Error, Please try again.');

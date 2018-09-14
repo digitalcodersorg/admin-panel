@@ -54,7 +54,7 @@ class Todo extends \yii\db\ActiveRecord
         $list = Todo::find();
             $list->where(['created_by'=>$uid]);
             $page = isset($page) ? (int) $page : 1;
-            $limit = 20;
+            $limit = 10;
             $offset = ($page - 1) * $limit;
             $total_count = $list->count();
             $data = $list->limit($limit)
@@ -73,19 +73,28 @@ class Todo extends \yii\db\ActiveRecord
         $todo->updated_on = date('Y-m-d H:i:s');
         if($todo->validate()){
             $todo->save();
-            return true;
+            return $todo->ID;
         }
         return false;
     }
     public static function updateTodo($post){
         $todo = Todo::findOne($post['ID']);
         $todo->text = ($post['text'] != $todo->text) ? $post['text'] : $todo->text;
-        $todo->status = $post['status'];
+        $todo->status = ($post['status'] == "") ? $todo->status : $post['status'];
         $todo->updated_on = date('Y-m-d H:i:s');
         if($todo->validate()){
             $todo->save();
             return true;
         }
         return false;
+    }
+    public static function deleteTodo($post){
+            $db = \Yii::$app->db;
+            $sql = "delete from pnl_todo where created_by = :user and ID = :id";
+            $command = $db->createCommand($sql);
+            $command->bindValue(':user', $post['user']);
+            $command->bindValue(':id', $post['ID']);
+            $result = $command->execute();
+            return $result;
     }
 }

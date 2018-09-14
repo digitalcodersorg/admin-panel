@@ -48,8 +48,8 @@ $this->title = 'Dashboard';
     <div class="col-md-6 col-sm-6 col-xs-12">
         <div class="x_panel" style="padding: 10px 5px;">
             <div class="x_title">
-                <h2>My Todo List <small id="todo-save"></small> </h2>
-
+                <h2 class="col-md-6 col-sm-6 col-xs-12">My Todo List <small id="todo-save"></small> </h2>
+<!--                <input type="text" value="" id="todo-filter" class="col-md-3 col-sm-3 col-xs-12 calender" placeholder="" style="float: right;"/>-->
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
@@ -58,7 +58,7 @@ $this->title = 'Dashboard';
                     <input type="hidden" name="uid" id="uid" value="<?= Yii::$app->user->identity->id; ?>" />
                     <ul class="to_do">
 
-                        <li>
+                        <li id="todo-editor">
                             <div class="input-group todo-item" style="width: 100%;">
                                 <span class="input-group-addon">
 <!--                                    <label class="control-label no-lr-padding">
@@ -99,7 +99,8 @@ $this->title = 'Dashboard';
                     </ul>
                     <div class="row text-right">
                         <div class="col-md-12">
-                        <button class="btn btn-primary btn-sm load-todo">Load older notes...</button>
+                            <span id="todo-counts"></span>
+                            <button class="btn btn-primary btn-sm load-todo" data-current="0" data-total="">Load older notes...</button>
                     </div>
                     </div>
                     

@@ -528,3 +528,6 @@ ul.to_do li {
 .todo-item:hover .todo-delete{
       display: block;
 }
+.line-through{
+        text-decoration: line-through;
+}

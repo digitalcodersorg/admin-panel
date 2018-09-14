@@ -100,14 +100,24 @@ class ApiController extends Controller
         if(Yii::$app->request->post()){
             $post = Yii::$app->request->post();
             $flag = true;
+            $id  = '';
             if(!empty($post['text'])&& !empty($post['ID'])){
                 $flag = Todo::updateTodo($post);
             }else{
-                $flag = Todo::insertTodo($post);
+                $id = Todo::insertTodo($post);
             }
-            return json_encode(['error'=>($flag ? '0' : 'Invalid Data')]); 
+            return json_encode(['error'=>($flag ? '0' : 'Invalid Data'),'id' => $id]); 
         }
         return json_encode(['error'=>'Invalid Request']);
     }
-    
+    public function actionDeleteTodo(){
+        if(Yii::$app->request->post()){
+            $post = Yii::$app->request->post();
+            if(!empty($post['user'])&& !empty($post['ID'])){
+                $todo = Todo::deleteTodo($post);
+            }
+                return json_encode(['error'=>($todo) ? 0 : $todo]); 
+        }
+        return json_encode(['error'=>'Invalid Request']);
+    }
 }
