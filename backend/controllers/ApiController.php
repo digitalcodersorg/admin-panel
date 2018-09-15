@@ -55,8 +55,12 @@ class ApiController extends Controller
         $subscription = Subscription::getCounts('', '');
         return json_encode($subscription);
     }
-    public function actionInsertItem(){
-        
+
+    public function actionGetItem($id="", $sid=""){
+        if(empty($sid)){
+            return json_encode(['error'=>'Data Not Found']);
+        }
+        return json_encode(SubscriptionItem::getItems($id,$sid));
     }
     public function actionGetUserData(){
         
@@ -74,7 +78,7 @@ class ApiController extends Controller
     public function actionAddSubscriptionItem(){
         if(Yii::$app->request->post()){
             $post = Yii::$app->request->post();
-            if(isset($post['ID'])){
+            if(!empty($post['ID'])){
                 $response = SubscriptionItem::updateItem(Yii::$app->request->post());
             }else{
                 $response = SubscriptionItem::insertItem(Yii::$app->request->post());
@@ -85,7 +89,9 @@ class ApiController extends Controller
     }
     public function actionDeleteSubscriptionItem(){
         if(Yii::$app->request->post()){
-            
+            $post = Yii::$app->request->post();
+            $delete = SubscriptionItem::deleteItem($post['ID']);
+            return json_encode(['error'=>$delete]);
         }
         return json_encode(['error'=>'Invalid Request']);
     }

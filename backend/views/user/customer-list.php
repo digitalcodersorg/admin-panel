@@ -71,6 +71,3 @@ $user = new common\models\User;
 
     </div>
 </div>
-<pre>
-
-</pre>

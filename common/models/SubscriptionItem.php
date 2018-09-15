@@ -17,6 +17,7 @@ use Yii;
  * @property string $mac_wifi
  * @property string $desk
  * @property string $phone
+ * @property string $owener
  * @property string $email
  * @property string $created_by
  * @property string $updated_by
@@ -48,8 +49,8 @@ class SubscriptionItem extends \yii\db\ActiveRecord
             [['type', 'mac_lan', 'mac_wifi', 'desk', 'phone'], 'string', 'max' => 50],
             [['name', 'serial_no', 'email'], 'string', 'max' => 255],
             [['subcription_id'], 'exist', 'skipOnError' => true, 'targetClass' => Subscription::className(), 'targetAttribute' => ['subcription_id' => 'ID']],
-            [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => CmsUser::className(), 'targetAttribute' => ['created_by' => 'id']],
-            [['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => CmsUser::className(), 'targetAttribute' => ['updated_by' => 'id']],
+            [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'id']],
+            [['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['updated_by' => 'id']],
         ];
     }
 
@@ -68,6 +69,7 @@ class SubscriptionItem extends \yii\db\ActiveRecord
             'mac_lan' => Yii::t('app', 'Mac Lan'),
             'mac_wifi' => Yii::t('app', 'Mac Wifi'),
             'desk' => Yii::t('app', 'Desk'),
+            'owener' => Yii::t('app', 'Owener'),
             'phone' => Yii::t('app', 'Phone'),
             'email' => Yii::t('app', 'Email'),
             'created_by' => Yii::t('app', 'Created By'),
@@ -90,7 +92,7 @@ class SubscriptionItem extends \yii\db\ActiveRecord
      */
     public function getCreatedBy()
     {
-        return $this->hasOne(CmsUser::className(), ['id' => 'created_by']);
+        return $this->hasOne(User::className(), ['id' => 'created_by']);
     }
 
     /**
@@ -98,7 +100,7 @@ class SubscriptionItem extends \yii\db\ActiveRecord
      */
     public function getUpdatedBy()
     {
-        return $this->hasOne(CmsUser::className(), ['id' => 'updated_by']);
+        return $this->hasOne(User::className(), ['id' => 'updated_by']);
     }
     public static function insertItem($postData = []){
         $subsItem = new SubscriptionItem(); 
@@ -111,6 +113,7 @@ class SubscriptionItem extends \yii\db\ActiveRecord
         $subsItem->mac_wifi = $postData['mac_wifi'];
         $subsItem->desk = $postData['desk'];
         $subsItem->phone = $postData['phone'];
+        $subsItem->owener = $postData['owener'];
         $subsItem->email = $postData['email'];
         $subsItem->created_by = $postData['user_id'];
         $subsItem->updated_by = $postData['user_id'];
@@ -131,6 +134,7 @@ class SubscriptionItem extends \yii\db\ActiveRecord
         $subsItem->mac_lan = ($postData['mac_lan'] != $subsItem->mac_lan)? $postData['mac_lan'] : $subsItem->mac_lan;
         $subsItem->mac_wifi = ($postData['mac_wifi'] !=  $subsItem->mac_wifi) ? $postData['mac_wifi'] : $subsItem->mac_wifi;
         $subsItem->desk = ($postData['desk'] != $subsItem->desk) ? $postData['desk'] : $subsItem->desk;
+        $subsItem->owener = ($postData['owener'] != $subsItem->desk) ? $postData['owener'] : $subsItem->desk;
         $subsItem->phone = ($postData['phone'] != $subsItem->phone)? $postData['phone']: $subsItem->phone;
         $subsItem->email = ($postData['email'] != $subsItem->email) ? $postData['email']: $subsItem->email;
         $subsItem->updated_by = $postData['user_id'];
@@ -140,5 +144,23 @@ class SubscriptionItem extends \yii\db\ActiveRecord
             return true;
         }
         return false;
+    }
+    public static function getItems($id = '',$sid = ''){
+        $items = SubscriptionItem::find();
+        $items->where(['subcription_id'=>$sid]);
+        if(!empty($id)){
+            $items->where(['ID' => $id]);
+            return $items->asArray()->one();
+        }
+        $data = $items->asArray()->all(); 
+        return ['data'=> $data];
+    }
+    public static function deleteItem($id){
+            $db = \Yii::$app->db;
+            $sql = "delete from pnl_subscription_item where ID = :id";
+            $command = $db->createCommand($sql);
+            $command->bindValue(':id', $id);
+            $result = $command->execute();
+            return $result;
     }
 }

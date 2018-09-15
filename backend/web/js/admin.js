@@ -17,15 +17,6 @@ $(document).ready(function () {
         ordering: true,
         aaSorting: []
     });
-    $('.itemTable').DataTable({
-        responsive: true,
-        pageLength: 10,
-        bLengthChange: false,
-        paging: true,
-        searching: true,
-        ordering: true,
-        aaSorting: []
-    });
     $('.calender').datetimepicker({
         format: 'YYYY-MM-DD',
         debug: false
@@ -197,7 +188,7 @@ $(document).ready(function () {
     (function (xhr) {
         /*******************************/
         if ($('.to_do').length) {
-            
+
             $('.load-todo').click(function () {
                 var cpage = $(this).data('current');
                 $('.load-todo').text('Load older notes');
@@ -238,6 +229,8 @@ $(document).ready(function () {
                             return;
                         }
                         $('.todo-template input[type="hidden"]').val(data.id);
+                        $('.todo-template input[type="text"]').removeClass('line-through');
+                        $('.todo-template .todo-check')[0].checked = false;
                         var $template = $('.todo-template'),
                                 $clone = $template
                                 .clone()
@@ -307,8 +300,8 @@ $(document).ready(function () {
                 updateTodo({text: $(this).val(), user_id: $('#uid').val(), status: '', id: $(this).siblings('input[type="hidden"]').val()});
             });
         }
-      //  var getTodo = (props) => {
-        function getTodo(props){
+        //  var getTodo = (props) => {
+        function getTodo(props) {
             window.XMLHttpRequest = xhr;
             $.ajax({
                 url: JS_BASE_URL + "api/get-todo",
@@ -322,16 +315,16 @@ $(document).ready(function () {
                     if (data.data.length <= 0) {
                         alert('Nothing Found!');
                         $('.load-todo').text('Reset');
-                        $('.load-todo').data('current' ,0);
+                        $('.load-todo').data('current', 0);
                         return;
                     }
                     $('.removable').remove();
-                    if(props.page == 1){
-                        var text = 'Showing 1 to 10 of '+data.total+' notes.';
-                    }else{
+                    if (props.page == 1) {
+                        var text = 'Showing 1 to 10 of ' + data.total + ' notes.';
+                    } else {
                         let start = (props.page * 10) - 10;
                         let end = (data.total < (start + 10)) ? data.total : (start + 10);
-                        var text = 'Showing '+ start +' to '+ end +' of '+data.total+' notes.';
+                        var text = 'Showing ' + start + ' to ' + end + ' of ' + data.total + ' notes.';
                     }
                     $('#todo-counts').text(text);
                     var rever = data.data.reverse();
@@ -342,6 +335,7 @@ $(document).ready(function () {
                             $('.todo-template input[type="text"]').addClass('line-through');
                             $('.todo-template .todo-check')[0].checked = true;
                         } else {
+                            $('.todo-template input[type="text"]').removeClass('line-through');
                             $('.todo-template .todo-check')[0].checked = false;
                         }
                         $('.load-todo').data('current', props.page);
@@ -578,10 +572,7 @@ $(document).ready(function () {
                 }
             });
         }
-        $('#add-pc-info').click(function () {
-            console.log($(this).data('amc'));
-            $('#pc-info-modal').modal('show');
-        });
+
         $('.forgot-form-submit').click(function (e) {
             e.preventDefault();
             window.XMLHttpRequest = xhr;
@@ -741,18 +732,28 @@ $(document).ready(function () {
             }
         });
         $('.fetch-amc').click(function () {
+            let $this = $(this);
             window.XMLHttpRequest = xhr;
             $.ajax({
                 url: JS_BASE_URL + 'subscription/get-subscription',
                 type: 'GET',
-                data: {sid: 1},
+                data: {sid: $this.data('amc')},
                 beforeSend: function () {
                     $.blockUI({message: $('#block-ui')});
                 },
-                success: function (data, textStatus, jqXHR) {
+                success: function (response, textStatus, jqXHR) {
                     $.unblockUI();
-                    console.log(data);
-                    $('.error-summary').addClass('hide');
+                    let data = jQuery.parseJSON(response);
+                    $('#add-pc-info').data('amc', data.subcription.ID);
+                    $('#device-form-amc-no').val(data.subcription.ID);
+                    $('#device-form-item-id').val("");
+                    $('input[name="sub_start"]').val(data.subcription.start_date);
+                    $('input[name="sub_end"]').val(data.subcription.end_date);
+                    $('#amc_status').val(data.subcription.status).change();
+                    $this.parent().siblings('li').removeClass('active');
+                    $this.parent().addClass('active');
+                    //$('.load-item-data').removeClass('hide');
+                    $('.table-responsive').addClass('hide');
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     $.unblockUI();
@@ -761,6 +762,164 @@ $(document).ready(function () {
             });
             window.XMLHttpRequest = null;
         });
+        $('#add-pc-info').click(function () {
+            $('#device-form-amc-no').val($(this).data('amc'));
+            $('#pc-info-modal').modal('show');
+            resetSubItem();
+        });
+        $('.save-sub-item').click(function () {
+            saveSubItem($('#device-form').serializeArray());
+        });
+        let saveSubItem = (props) => {
+            window.XMLHttpRequest = xhr;
+            $.ajax({
+                url: JS_BASE_URL + 'api/add-subscription-item',
+                type: 'POST',
+                data: props,
+                beforeSend: function () {
+                    $.blockUI({message: $('#block-ui')});
+                    $('.save-sub-item').addClass('disable');
+                },
+                success: function (response, textStatus, jqXHR) {
+                    $.unblockUI();
+                    $('.save-sub-item').removeClass('disable');
+                    resetSubItem();
+                    $('.load-item-data').click();
+                    $('#pc-info-modal').modal('hide');
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $.unblockUI();
+                    alert('Internal Error! Please try again.');
+                }
+            });
+            window.XMLHttpRequest = null;
+        }
+        $('.reset-sub-item').click(function () {
+            resetSubItem();
+        });
+        let resetSubItem = () => {
+            $('.reset').each(function () {
+                $(this).val("");
+            });
+        }
+        $('.load-item-data').click(function () {
+            window.XMLHttpRequest = xhr;
+            $('.table-responsive').removeClass('hide');
+            var amc = $('#add-pc-info').data('amc');
+
+            itrmTable.ajax.url(JS_BASE_URL + 'api/get-item?sid=' + amc).load(function () {
+                $('.edit-item').unbind('click');
+                $('.edit-item').click(function () {
+                    let id = $(this).data('id');
+                    let sid = $(this).data('sid');
+                    getSubItems(id, sid).then(function (data) {
+                        let itemdata = data;
+                        $('#device-form-item-id').val(itemdata.ID);
+                        $('#type').val(itemdata.type);
+                        $('#name').val(itemdata.name);
+                        $('#serial').val(itemdata.serial_no);
+                        $('#quantity').val(itemdata.quantity);
+                        $('#mac-address-lan').val(itemdata.mac_lan);
+                        $('#mac-address-wifi').val(itemdata.mac_wifi);
+                        $('#owener').val(itemdata.owener);
+                        $('#desk').val(itemdata.desk);
+                        $('#contact').val(itemdata.contact);
+                        $('#email').val(itemdata.email);
+                        $('#pc-info-modal').modal('show');
+                    }).catch(function (err) {
+                        // Run this when promise was rejected via reject()
+                        alert('Internal Error.');
+                    });
+
+                });
+                $('.delete-item').unbind('click');
+                $('.delete-item').click(function () {
+                    if (confirm("Are you sure want to delete?")) {
+                        window.XMLHttpRequest = xhr;
+                        $.ajax({
+                            url: JS_BASE_URL + 'api/delete-subscription-item',
+                            type: 'POST',
+                            data: {ID : $(this).data('id')},
+                            beforeSend: function () {
+                                $.blockUI({message: $('#block-ui')});
+                            },
+                            success: function (response) {
+                                $.unblockUI();
+                                $('.load-item-data').click();
+                                //console.log(response);
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                $.unblockUI();
+                                alert('Internal Error! Please try again.');
+                            }
+                        });
+                        window.XMLHttpRequest = null;
+                    }
+
+                });
+            });
+
+            console.log('reload');
+            window.XMLHttpRequest = null;
+        });
+
+
+        function getSubItems(id, sid) {
+            window.XMLHttpRequest = xhr;
+            var jdata;
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: JS_BASE_URL + 'api/get-item',
+                    type: 'GET',
+                    data: {id: id, sid: sid},
+                    beforeSend: function () {
+                        $.blockUI({message: $('#block-ui')});
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        $.unblockUI();
+                        reject(err)
+                        alert('Internal Error! Please try again.');
+                    }
+                }).done(function (result) {
+                    jdata = jQuery.parseJSON(result);
+                    $.unblockUI();
+                    console.log('hello');
+                    resolve(jdata);
+
+                });
+            });
+            window.XMLHttpRequest = null;
+
+        }
+
+
+        let fetch_item_url = JS_BASE_URL + 'api/get-item?sid=1';
+        var itrmTable = $('.itemTable').DataTable({
+            responsive: true,
+            pageLength: 10,
+            bLengthChange: false,
+            paging: true,
+            searching: true,
+            ordering: true,
+            aaSorting: [],
+            ajax: fetch_item_url,
+            columns: [
+                {data: 'type'},
+                {data: 'name'},
+                {data: "serial_no"},
+                {data: "quantity"},
+                {data: "Action",
+                    render: function (data, type, row) {
+                        return '<a href="javascript:void(0)" class="edit-item" data-id="' + row.ID + '" data-sid="' + row.subcription_id + '"><i class="fa fa-pencil" aria-hidden="true"></i></a> || <a href="javascript:void(0)" class="delete-item" data-id="' + row.ID + '" data-sid="' + row.subcription_id + '"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+
+                    }
+                }
+            ]
+        });
+
+
+
+
     }(window.XMLHttpRequest));
     window.XMLHttpRequest = null;
 });
