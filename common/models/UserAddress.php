@@ -64,7 +64,7 @@ class UserAddress extends \yii\db\ActiveRecord
             'title' => Yii::t('app', 'Title'),
         ];
     }
-    public static function getUserAddress($id = '', $user_id = '', $multiple = false){
+    public static function getUserAddress($id = '', $user_id = '', $multiple = false,$args = []){
         $query = UserAddress::find();
         $query->select([UserAddress::tableName().'.*','c.title as country_name','s.title as state_name']);
         $query->leftJoin(Country::tableName().' as c ', 'c.ID = '.UserAddress::tableName().'.country');
@@ -74,6 +74,11 @@ class UserAddress extends \yii\db\ActiveRecord
         }
         if(!empty($user_id)){
             $query->where(['user_id'=>$user_id]);
+        }
+        if(!empty($args)){
+            foreach($args as $key=>$val){
+                $query->andWhere([$key=>$val]);
+            }
         }
         $query->orderBy(['ID'=>SORT_DESC]);
         if($multiple){

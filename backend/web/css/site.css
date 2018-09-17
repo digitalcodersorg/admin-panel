@@ -154,6 +154,7 @@ a.product-name {
     background: #2a3f54;
     color: #fff;
     font-weight: 700;
+    cursor: pointer;
 }
 .tabs-left>li>a:hover, .tabs-left>li>a:focus {
     background: #2a3f54;

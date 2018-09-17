@@ -19,6 +19,7 @@ use yii\filters\AccessControl;
 use yii\data\Pagination;
 use common\models\Subscription;
 use common\models\SubscriptionItem;
+
 /**
  * UserController implements the CRUD actions for User model.
  */
@@ -259,14 +260,26 @@ class UserController extends Controller {
         ]);
     }
 
-    public function actionViewCustomer() {
-        if (!Yii::$app->user->can('view-customer-info')) {
+    public function actionViewCustomer($id) {
+
+        $customer = User::find()->where(['ID' => $id, 'type' => 'frontend_user'])->asArray()->one();
+        if (!Yii::$app->user->can('view-customer-info') || empty($customer)) {
             throw new ForbiddenHttpException;
         }
-        $user = new User();
+        $model = new User();
+        $defaultShipping = UserAddress::getUserAddress('', $id, false, ['type' => 'default_shipping']);
+        $defaultBilling = UserAddress::getUserAddress('', $id, false, ['type' => 'default_billing']);
+        $subscriptions = Subscription::find()->where(['subscriber_id' => $id])->asArray()->all();
+        $data = $model->getUserMeta($id, 'USER_PERSONAL_DATA');
+        $amc = Subscription::find()->where(['subscriber_id' => $id, 'status' => 'Active'])->count();
+
         return $this->render('view-customer', [
-                    'users' => $user->search(Yii::$app->request->queryParams, 'frontend_user'),
-                    'username' => isset(Yii::$app->request->queryParams['username']) ? Yii::$app->request->queryParams['username'] : "",
+                    'user' => $customer,
+                    'defaultShipping' => $defaultShipping,
+                    'defaultBilling' => $defaultBilling,
+                    'subscriptions' => $subscriptions,
+                    'amc' => $amc,
+                    'personal_data' => !empty($data) ? json_decode($data, true) : [],
         ]);
     }
 
@@ -310,7 +323,7 @@ class UserController extends Controller {
             $data = $modal->getUserMeta($user, 'USER_PERSONAL_DATA');
             $defaultShipping = UserAddress::find()->where(['type' => 'default_shipping', 'user_id' => $user])->orderBy(['ID' => SORT_DESC])->one();
             $defaultBilling = UserAddress::find()->where(['type' => 'default_billing', 'user_id' => $user])->orderBy(['ID' => SORT_DESC])->one();
-            $subscriptions = Subscription::find()->where(['subscriber_id'=>$user])->asArray()->all();
+            $subscriptions = Subscription::find()->where(['subscriber_id' => $user])->asArray()->all();
             return $this->render('update-customer', [
                         'model' => $modal,
                         'subscriptions' => $subscriptions,
@@ -334,25 +347,27 @@ class UserController extends Controller {
         }
         return json_encode(['data not found!']);
     }
-    public function actionUpdateCustomerData(){
+
+    public function actionUpdateCustomerData() {
         if (Yii::$app->request->post()) {
             $post = Yii::$app->request->post();
             $user = new User();
             $data = $user->getUserMeta($post['User']['user_id'], 'USER_PERSONAL_DATA');
-            if(count($data) > 0){
-                $flag = $user->updateUserMeta('USER_PERSONAL_DATA', json_encode($post['personl_data']),$post['User']['user_id']);
-            }else{
-                $flag = $user->addUserMeta('USER_PERSONAL_DATA', json_encode($post['personl_data']),$post['User']['user_id']);
+            if (count($data) > 0) {
+                $flag = $user->updateUserMeta('USER_PERSONAL_DATA', json_encode($post['personl_data']), $post['User']['user_id']);
+            } else {
+                $flag = $user->addUserMeta('USER_PERSONAL_DATA', json_encode($post['personl_data']), $post['User']['user_id']);
             }
-            
-            if($flag){
+
+            if ($flag) {
                 return 1;
             }
         }
         return 0;
     }
+
     //Fetch Customer personal data with user_id
-    public function actionGetCustomerData($uid = ''){
+    public function actionGetCustomerData($uid = '') {
         if (!empty($uid)) {
             $user = new User();
             $data = $user->getUserMeta($uid, 'USER_PERSONAL_DATA');
@@ -360,4 +375,5 @@ class UserController extends Controller {
         }
         return 'Invalid Request';
     }
+
 }

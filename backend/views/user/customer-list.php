@@ -15,11 +15,10 @@ $user = new common\models\User;
     <div class="alert btn-area">
         <form action="" id="user_index">
             <div class="col-md-4 col-sm-12 col-xs-12 form-group">
-                <input type="text" name="username" value="" class="form-control" autocomplete="off" placeholder="Type Username or Email or Company Name"/>
+                <input type="text" name="username" value="<?= $username?>" class="form-control" autocomplete="off" placeholder="Type Username or Email or Company Name"/>
             </div>
             <?= Html::submitButton(Yii::t('app', 'Search'), ['class' => 'btn btn-primary']) ?>
-            <?= Html::Button(Yii::t('app', 'Clear'), ['class' => 'btn btn-primary', 'onclick' => "return clearForm('user_index');"]) ?>
-<?= Html::a('Create User', ['update'], ['class' => 'btn btn-primary hide']) ?>
+            <?= Html::a(Yii::t('app', 'Clear'), ['user/customer-info'],['class' => 'btn btn-primary']) ?>
         </form>
         <div class="clearfix"></div>
     </div>
@@ -42,7 +41,7 @@ $user = new common\models\User;
             </thead>
 
             <tbody>
-<?php foreach ($users as $user): ?>
+            <?php foreach ($users as $user): ?>
                     <tr>
                         <td><a href=""><?= $user->username ?></a></td>
                         <td><?= $user->getUsermeta($user->id, 'Company Name') ?></td>
@@ -52,8 +51,8 @@ $user = new common\models\User;
                         <td><?= $user->updated_at ?></td>
                         <?php if (Yii::$app->user->can('update-customer-info') || Yii::$app->user->can('view-customer-info')) { ?>
                         <td>
-                          <?php if(Yii::$app->user->can('view-customer-info')){ ?>  
-                        <?= Html::a('<i class="fa fa-eye" aria-hidden="true"></i>', ['view', 'user' => $user->id], ['class' => 'btn btn-sm btn-info']) ?><?php }?><?php if(Yii::$app->user->can('update-customer-info')){ ?>
+                        <?php if(Yii::$app->user->can('view-customer-info')){ ?>  
+                        <?= Html::a('<i class="fa fa-eye" aria-hidden="true"></i>', ['view-customer', 'id' => $user->id], ['class' => 'btn btn-sm btn-info']) ?><?php }?><?php if(Yii::$app->user->can('update-customer-info')){ ?>
                         <?= Html::a('<i class="fa fa-pencil" aria-hidden="true"></i>', ['update-customer', 'user' => $user->id], ['class' => 'btn btn-sm btn-dark']) ?><?php }?>
                         </td>
                         <?php }?>

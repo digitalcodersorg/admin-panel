@@ -74,7 +74,7 @@ $sub_status = ['Active', 'Pause', 'Suspend', 'On Hold', 'Expired', 'Renewed', 'C
                 </div>
                 <div class="col-md-6 col-xs-12">
                     <span class="btn btn-primary" id="save-user-data">Save</span>
-                    <a class="btn btn-primary" href="">Back</a>
+                    <?php echo Html::a('Back to List', ['user/customer-info'], ['class' => 'btn btn-primary']); ?>
                 </div>
                 <?php ActiveForm::end(); ?>
             </div>
