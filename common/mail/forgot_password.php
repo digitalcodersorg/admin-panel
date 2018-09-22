@@ -21,7 +21,7 @@ width: 100%;">
             <div style="max-width: 600px; margin: 0 auto; display: block; padding: 20px;">
                 <table  style="background: #fff; border: 1px solid #e9e9e9; border-radius: 3px;" width="100%" cellpadding="0" cellspacing="0">
                     <tr>
-                        <td style="padding:60px 30px 30px 30px  !important; background:url(<?= Yii::$app->params['baseUrl']?>backend/web/img/td_mailler_logo.png) no-repeat 20px 20px;">
+                        <td style="padding:60px 30px 30px 30px  !important; background:url(<?= Yii::$app->params['baseUrl'] ?>imgages/mailer_logo.png) no-repeat 20px 20px;">
                             <table style="border-top: 1px solid rgb(221, 221, 221);
 padding: 10px 0px 0px;" cellpadding="0" cellspacing="0">
 
@@ -54,7 +54,7 @@ padding: 10px 0px 0px;" cellpadding="0" cellspacing="0">
                   padding: 20px;">
                     <table width="100%">
                         <tr>
-                            <td style="padding: 0 0 20px;"><a  href="<?= Yii::$app->params['siteurl'] ?>"><img width="150" src="<?= Yii::$app->params['baseUrl'] ?>flogo.png"></a></td>
+                            <td style="padding: 0 0 20px;"><a  href="<?= Yii::$app->params['baseUrl'] ?>imgages/mailer_logo.png"></a></td>
                         </tr>
                     </table>
                 </div></div>
