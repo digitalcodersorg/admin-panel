@@ -24,7 +24,7 @@ return [
                 'port' => '465',
                 'encryption' => 'ssl',
             ],
-            'useFileTransport' => true,
+            'useFileTransport' => false,
         ],
     ],
 ];
