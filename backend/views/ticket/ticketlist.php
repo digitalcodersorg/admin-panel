@@ -102,6 +102,7 @@ $ticket_subjects = Yii::$app->params['ticket_subjects'];
             <button class="btn btn-primary btn-sm">Download <i class="fa fa-arrow-down" aria-hidden="true"></i></button>
             <?php }?>
             <?= Html::a(Yii::t('app', 'Clear'), ['/tickets'], ['class' => 'btn btn-primary btn-sm']); ?>
+            <?= Html::a(Yii::t('app', 'Create New'), ['ticket/create'], ['class' => 'btn btn-primary btn-sm']); ?>
         </form>
 
         <div class="clearfix"></div>

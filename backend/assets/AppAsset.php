@@ -17,7 +17,7 @@ class AppAsset extends AssetBundle
         //'css/jquery.mCustomScrollbar.min.css',
         'css/chosen/chosen.css',
         'css/bootstrap-duallistbox.css',
-        'css/site.css?22',
+        'css/site.css?23',
     ];
     public $js = [
         'js/moment.min.js',
@@ -29,7 +29,7 @@ class AppAsset extends AssetBundle
         'js/jquery.bootstrap-duallistbox.js',
         'js/Highcharts-4.2.1/js/highcharts.js',
         'js/jquery.blockUI.js',
-        'js/admin.js?232',
+        'js/admin.js?14',
     ];
     public $depends = [
         'yii\web\YiiAsset',

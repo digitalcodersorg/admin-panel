@@ -25,4 +25,6 @@ return [
         15 => 'Additional Service',
         16 => 'Engineer Visit',
     ],
+    'ticket_prefix'=>"ADPNL",
+    'ticket_start'=>"1001",
 ];

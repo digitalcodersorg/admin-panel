@@ -206,6 +206,9 @@ class Ticket extends \yii\db\ActiveRecord {
         if (!empty($params['department'])) {
             $search = $search->andWhere([Ticket::tableName() . '.department_id' => $params['department']]);
         }
+        if (!empty($params['owener'])) {
+            $search = $search->andWhere([Ticket::tableName() . '.ticket_owener' => $params['owener']]);
+        }
 
 
         if (!empty($params['search_text'])) {
@@ -366,5 +369,46 @@ class Ticket extends \yii\db\ActiveRecord {
     }
     public static function getCounts(){
         
+    }
+    public function generateTicketCode(){
+        $prefix = Yii::$app->params['ticket_prefix'];
+        $start = Yii::$app->params['ticket_start'];
+        $total = $this->find()->select(['ticket_code'])->orderBy(['ID' => SORT_DESC])->one();
+        $count = str_replace($prefix,"",$total->ticket_code);
+        if($start > $count){
+            $code = $start;
+            
+        }else{
+            $code = $count + 1;
+        }
+        return $prefix . $code;
+    }
+    public static function insertTicket($post){
+        $subscription = new Subscription();
+        $activeSubs = $subscription->getSubscription(empty($post['ticket_owener']) ? Yii::$app->user->identity->id : $post['ticket_owener'], "Active");
+        $ticket = new Ticket();
+        $ticket->ticket_text = $post['ticket_text'];
+        $ticket->ticket_priority = $post['priority'];
+        $ticket->ticket_status = "Open";
+        $ticket->category = ($activeSubs > 0) ? "AMC" : "NON AMC";
+        $ticket->department_id = empty($post['department_id']) ? NULL : $post['department_id'];
+        $ticket->assigned_to = empty($post['assigned_to']) ? NULL : $post['assigned_to'];
+        $ticket->assigned_by = (empty($post['assigned_by']) ? Yii::$app->user->identity->id : $post['assigned_by']);
+        $ticket->ticket_subject = $post['subject'];
+        $ticket->ticket_code = $ticket->generateTicketCode();
+        $ticket->ticket_owener = (empty($post['ticket_owener']) ? Yii::$app->user->identity->id : $post['ticket_owener']);
+        $ticket->ticket_contacts = empty($post['ticket_contact']) ? NULL : json_encode($post['ticket_contact']);
+        $ticket->created_by = (empty($post['created_by']) ? Yii::$app->user->identity->id : $post['created_by']);
+        $ticket->updated_by = (empty($post['created_by']) ? Yii::$app->user->identity->id : $post['created_by']);
+        $ticket->created_on = date('Y-m-d H:i:s');
+        $ticket->created_on = date('Y-m-d H:i:s');
+        $ticket->status_updated_on = date('Y-m-d H:i:s');
+        if($ticket->validate()){
+            $ticket->save();
+            return $ticket->ID;
+        }else{
+            print_r($ticket->getErrors());
+        }
+        return null;
     }
 }

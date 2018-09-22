@@ -62,8 +62,10 @@ class ApiController extends Controller
         }
         return json_encode(SubscriptionItem::getItems($id,$sid));
     }
-    public function actionGetUserData(){
-        
+    public function actionGetUserData($ID = "", $search = ''){
+        $user = new User();
+        $userData = $user->search(['username' => $search], 'frontend_user',true);
+        return json_encode($userData);
     } 
     public function actionUpdateUser(){
         

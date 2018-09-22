@@ -281,6 +281,58 @@ $(document).ready(function () {
             });
             window.XMLHttpRequest = null;
         }
+        var typingTimer;
+        var doneTypingInterval = 1000;
+        $('.search-user').keyup(function () {
+            var val = $(this).val();
+            if (val.length >= 3) {
+                clearTimeout(typingTimer);
+                if ($('.search-user').val()) {
+                    typingTimer = setTimeout(doneTyping, doneTypingInterval);
+                }
+            }
+        });
+        var doneTyping = () => {
+            let s =  $('.search-user').val();
+            window.XMLHttpRequest = xhr;
+            
+            $.ajax({
+                url: JS_BASE_URL + "api/get-user-data",
+                type: 'GET',
+                data: {ID : "", search : s},
+                beforeSend: function (xhr) {
+                    $('.searched-text').css("display","block");
+                    $('.searched-text').block({message: $('#block-ui')});
+                },
+                success: function (data, textStatus, jqXHR) {
+                    $('.searched-text').unblock();
+                    let users = jQuery.parseJSON(data);
+                    let html = "";
+                    if(users.length){
+                    $.each(users, function(k,v){
+                       html += '<li><a href="#" data-user="'+v.id+'">'+v.username+'</a></li>';
+                       
+                    });
+                    }else{
+                        html += '<li><a href="#" data-user="">Not Found...</a></li>'; 
+                    }
+                    $('.searched-text').html(html);
+                       $('.searched-text a').unbind('click');
+                       $('.searched-text a').click(function(){
+                           console.log($(this).data('user'));   
+                           $('input[name="ticket_owener"]').val($(this).data('user'));
+                           $('.search-user').val($(this).text());
+                           $('.searched-text').css("display","none");
+                    });
+                       
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $('.searched-text').unblock();
+                    alert('Internal Error, Please try again.');
+                }
+            });
+            window.XMLHttpRequest = null;
+        }
         var bindClickOnTodo = () => {
             $('.todo-check').unbind('click');
             $('.todo-check').click(function () {
@@ -839,7 +891,7 @@ $(document).ready(function () {
                         $.ajax({
                             url: JS_BASE_URL + 'api/delete-subscription-item',
                             type: 'POST',
-                            data: {ID : $(this).data('id')},
+                            data: {ID: $(this).data('id')},
                             beforeSend: function () {
                                 $.blockUI({message: $('#block-ui')});
                             },

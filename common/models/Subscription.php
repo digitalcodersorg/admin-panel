@@ -119,6 +119,18 @@ class Subscription extends \yii\db\ActiveRecord
     {
         return $this->hasMany(SubscriptionItem::className(), ['subcription_id' => 'ID']);
     }
+    public function getSubscription($user, $status){
+        if(!empty($user)){
+            $search = $this::find();
+            if(!empty($status)){
+                $search->where(['`status`'=>$status]);
+            }
+            return $search->orderBy(['created_on' => SORT_DESC])
+                ->asArray()
+                ->all();
+        }
+        return null;
+    }
     public static function getCounts($status = '', $type = ''){
         $search = Subscription::find();
         if(!empty($status)){

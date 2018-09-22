@@ -97,7 +97,7 @@ class User extends ActiveRecord implements IdentityInterface {
      *     Search For User       *
      * ************************************** */
 
-    public function search($params = "", $type = 'cms_user') {
+    public function search($params = "", $type = 'cms_user', $array = false) {
         $find = User::find();
         $utility = new Utility();
         
@@ -106,6 +106,9 @@ class User extends ActiveRecord implements IdentityInterface {
                ->orFilterWhere(['like', 'email', $utility->validateSearchKeywords($params['username'])]);
         }
         $find->andWhere(['type' => $type]);
+        if($array){
+            return  $find->orderBy(['updated_at' => SORT_DESC])->asArray()->all();
+        }
         return $find->orderBy(['updated_at' => SORT_DESC])->all();
     }
 

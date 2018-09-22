@@ -62,7 +62,7 @@ $priority = Yii::$app->params['priority'];
                                 <td><button onclick="return false;" class="btn btn_priority btn_<?= strtolower($ticket['ticket_priority']) ?>" title="<?= $ticket['ticket_priority'] ?>"><?= $ticket['ticket_priority'] ?></button></td>
                             </tr>
                             <tr>
-                                <td style="max-width: 90px;"><label class="control-label">Ticket Owener <span data-toggle="tooltip" data-placement="right" title="" data-original-title="Ticket Creator"><i class="fa fa-info-circle"></i></span></label></td>
+                                <td style="max-width: 90px;"><label class="control-label">Ticket Creator </label></td>
                                 <td><p><strong><?= $ticket['created_by_name'] ?></strong></p> </td>
                             </tr>
 

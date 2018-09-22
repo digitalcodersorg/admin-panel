@@ -532,3 +532,13 @@ ul.to_do li {
 .line-through{
         text-decoration: line-through;
 }
+ul.dropdown-menu.searched-text {
+    margin-top: -1px;
+    left: 10px;
+    width: 94%;
+}
+.searched-text>li>a {
+    color: #5A738E;
+    font-size: 15px;
+    padding: 3px 10px;
+}
