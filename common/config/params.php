@@ -17,5 +17,8 @@ return [
         'key' => '',
         'secret' => ''
     ],
-    'user_image_sizes' => [200, 72]
+    'user_image_sizes' => [200, 72],
+    'baseUrl'=>'http://18.217.153.150/admin-panel/',
+    'siteurl'=>'http://18.217.153.150/admin-panel/',
+    'mail_prefix'=>"Admin Panel"
 ];

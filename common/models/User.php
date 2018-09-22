@@ -439,4 +439,24 @@ class User extends ActiveRecord implements IdentityInterface {
         }
         return $search->asArray()->all();
     }
+    public function insertUser($post){
+        $user = new User();
+        $user->username = $post['username'];
+        $user->first_name = $post['first_name'];
+        $user->last_name = $post['last_name'];
+        $user->cms_user_contact_no = $post['contact_no'];
+        $user->email = $post['email'];
+        $user->type = "frontend_user";
+        $user->status = $post['status'];
+        $user->created_by = 1;
+        $user->updated_by = 1;
+        $user->created_at = date('Y-m-d H:i:s');
+        $user->updated_at = date('Y-m-d H:i:s');
+        if($user->validate()){
+            $user->save();
+            return $user;
+        }
+        return null;
+    }
+   
 }

@@ -117,6 +117,7 @@ class DepartmentController extends Controller {
                 $addressModel = $addressModel->findOne($model->address);
             }
             $rightListBox = $departmentModel->getUserRightListBoxData($id);
+            $model->updated_on = date('Y-m-d H:i:s');
         } else {
             $model = new Department();
             $model->created_by = Yii::$app->user->identity->id;
@@ -133,6 +134,7 @@ class DepartmentController extends Controller {
             }
             $model->address = $addressModel->ID;
             $model->updated_by = Yii::$app->user->identity->id;
+            
             if ($model->validate() && $model->save()) {
                 if (!empty($postValues['ListBox'])) {
                     $departmentModel->deletePreviousList($model->ID);
