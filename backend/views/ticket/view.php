@@ -102,7 +102,7 @@ $priority = Yii::$app->params['priority'];
                                         <?php if(!empty($userAddress)){?>
                                         <p><?= $userAddress['address_line1'] ?></p>
                                         <p><?= $userAddress['address_line2'] ?> <?= $userAddress['land_mark'] ?></p>
-                                        <p><?= $userAddress['city'] ?> <?= $userAddress['state_name'] ?> <?= $userAddress['country_name'] ?> <?= $userAddress['zip'] ?></p><?php }?>
+                                        <p><?= $userAddress['city'] ?> <?= $userAddress['state_name'] ?> <?= $userAddress['country_name'] ?> <?= $userAddress['zip'] ?></p><?php }else{echo "Not Available";}?>
                                     </address> 
                                 </td>
                             </tr>
