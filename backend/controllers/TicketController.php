@@ -124,13 +124,13 @@ class TicketController extends Controller {
         } else {
             throw new NotFoundHttpException;
         }
-
-        $ticket = Ticket::search(['id' => $id]);
-
-        if (empty($ticket['data'])) {
+        
+        $ticket = Ticket::searchOne($id);
+   
+        if (empty($ticket)) {
             throw new NotFoundHttpException;
         }
-        if (($ticket['data'][0]['ticket_status'] == 'Open' && $ticket['data'][0]['assigned_to'] == Yii::$app->user->identity->id) || ($ticket['data'][0]['ticket_status'] == 'Forward' && $ticket['data'][0]['forwarded_to'] == Yii::$app->user->identity->id)) {
+        if (($ticket['ticket_status'] == 'Open' && $ticket['assigned_to'] == Yii::$app->user->identity->id) || ($ticket['ticket_status'] == 'Forward' && $ticket['forwarded_to'] == Yii::$app->user->identity->id)) {
             $ticketUpdate = Ticket::findOne($id);
             $ticketUpdate->status_updated_on = date('Y-m-d H:i:s');
             $ticketUpdate->updated_on = date('Y-m-d H:i:s');
@@ -141,11 +141,11 @@ class TicketController extends Controller {
             $ticket['data'][0]['status_updated_on'] = date('Y-m-d H:i:s');
         }
 
-        $userData = User::find()->where(['id' => $ticket['data'][0]['ticket_owener']])->asArray()->one();
-        $userAddress = UserAddress::getUserAddress('', $ticket['data'][0]['ticket_owener']);
+        $userData = User::find()->where(['id' => $ticket['ticket_owener']])->asArray()->one();
+        $userAddress = UserAddress::getUserAddress('', $ticket['ticket_owener']);
         $ticketActivity = TicketActivity::getActivities($id);
         return $this->render('view', [
-                    'ticket' => $ticket['data'][0],
+                    'ticket' => $ticket,
                     'user' => $userData,
                     'ticketActivity' => $ticketActivity,
                     'userAddress' => !empty($userAddress) ? $userAddress : [],

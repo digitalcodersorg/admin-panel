@@ -138,7 +138,27 @@ class Ticket extends \yii\db\ActiveRecord {
     public function getDepartment() {
         return $this->hasOne(Department::className(), ['ID' => 'department_id']);
     }
+    public static function searchOne($id){
+        $select = [Ticket::tableName() . '.*',
+            'u1.username as created_by_name',
+            'u2.username as updated_by_name',
+            'u3.username as ticket_owener_name',
+            'u4.username as assigned_to_name',
+            'd.name as department_name',
+        ];
+        $search = Ticket::find();
+        $search->select($select);
 
+        $search->leftJoin(User::tableName() . ' as u1 ', 'u1.id = ' . Ticket::tableName() . '.created_by');
+        $search->leftJoin(User::tableName() . ' as u2 ', 'u2.id = ' . Ticket::tableName() . '.updated_by');
+        $search->leftJoin(User::tableName() . ' as u3 ', 'u3.id = ' . Ticket::tableName() . '.ticket_owener');
+        $search->leftJoin(User::tableName() . ' as u4 ', 'u4.id = ' . Ticket::tableName() . '.assigned_to');
+        $search->leftJoin(Department::tableName() . ' as d ', 'd.id = ' . Ticket::tableName() . '.department_id');
+        if (!empty($id)) {
+            $search = $search->andWhere([Ticket::tableName() . '.ID' => $id]);
+        }
+        return $search->asArray()->one();
+    }
     public static function search($params, $action = '', $role = '', $user_id = '') {
         $utility = new Utility();
         $select = [Ticket::tableName() . '.*',
@@ -168,6 +188,11 @@ class Ticket extends \yii\db\ActiveRecord {
         } else if (($role == 'assigner')) {
             $search = $search->andWhere([Ticket::tableName() . '.assigned_to' => null]);
         }
+        
+        if(empty($role)){
+            $search = $search->andWhere([Ticket::tableName() . '.assigned_to' => $user_id]);
+        }
+        
         if (!empty($params['category'])) {
             $search = $search->andWhere([Ticket::tableName() . '.category' => $params['category']]);
         }
