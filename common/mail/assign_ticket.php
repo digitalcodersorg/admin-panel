@@ -23,7 +23,7 @@
              <div style="max-width: 600px; margin: 0 auto; display: block; padding: 20px;">
                  <table  style="background: #fff; border: 1px solid #e9e9e9; border-radius: 3px;" width="100%" cellpadding="0" cellspacing="0">
                      <tr>
-                         <td style="padding:60px 30px 30px 30px  !important; background:url(<?= Yii::$app->params['baseUrl'] ?>images/mailer_logo.png) no-repeat 20px 20px;">
+                         <td style="padding:60px 30px 30px 30px  !important; background:url(<?= Yii::$app->params['baseUrl'] ?>images/td_logo_mailer.jpg) no-repeat 20px 20px;">
                              <table  cellpadding="0" cellspacing="0" style="border-top: 1px solid rgb(221, 221, 221);
 padding: 10px 0px 0px;">
 
