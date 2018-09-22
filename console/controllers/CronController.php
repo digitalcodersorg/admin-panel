@@ -24,7 +24,6 @@ class CronController extends Controller {
                         } else {
                             throw new ErrorException($emailKey);
                         }
-                        echo "\n".$email["template_name"];
                         if (!empty($current_email_id)) {
                             $flag = Yii::$app->mailer->compose($email["template_name"], ["model" => $email])
                                     ->setFrom([(empty($email['from_email_id']) ? \Yii::$app->params['supportEmail'] : $email['from_email_id']) =>
@@ -33,8 +32,15 @@ class CronController extends Controller {
                                     ->setSubject($email['subject'])
                                     ->send();
                         }
-                        echo $flag;
-                        echo "\nSent Email for " . $email["id"];
+                        if($flag){
+                            $sent = EmailNotification::findOne($email["id"]);
+                            $sent->status = "Sent";
+                            $sent->save();
+                            echo "\nSent Email for " . $email["id"];
+                        }else{
+                            echo "\nEmail Not Sent for " . $email["id"];
+                        }
+                        
                     }
                 } catch (ErrorException $e) {
                     echo "\nError in sending email " . $e->getTraceAsString();
