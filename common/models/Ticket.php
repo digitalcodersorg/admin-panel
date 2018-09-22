@@ -266,7 +266,7 @@ class Ticket extends \yii\db\ActiveRecord {
                     'email_body' => json_encode([
                         'assigned_to_name' => $userDetail['username'],
                         'assigned_by_name' => $assigniDetail['username'],
-                        'ticket_url' => Url::base(true).'ticket/view?id=' . $ticket->ID,
+                        'ticket_url' => Url::base(true).'/ticket/view?id=' . $ticket->ID,
                     ]),
                     'template_name' => 'assign_ticket',
                     'created_by' => $assigniDetail['id'],
@@ -301,7 +301,7 @@ class Ticket extends \yii\db\ActiveRecord {
                     'email_body' => json_encode([
                         'forwarded_to_name' => $userb->username,
                         'forwarded_by_name' => $username,
-                        'ticket_url' => Url::base(true).'ticket/view?id=' . $ticket->ID,
+                        'ticket_url' => Url::base(true).'/ticket/view?id=' . $ticket->ID,
                     ]),
                     'template_name' => 'forward_ticket',
                     'created_by' => $user_id,
