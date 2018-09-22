@@ -99,9 +99,10 @@ $priority = Yii::$app->params['priority'];
                                 <td style="max-width: 90px;"><label class="control-label">Address</label></td>
                                 <td>
                                     <address>
+                                        <?php if(!empty($userAddress)){?>
                                         <p><?= $userAddress['address_line1'] ?></p>
                                         <p><?= $userAddress['address_line2'] ?> <?= $userAddress['land_mark'] ?></p>
-                                        <p><?= $userAddress['city'] ?> <?= $userAddress['state_name'] ?> <?= $userAddress['country_name'] ?> <?= $userAddress['zip'] ?></p>
+                                        <p><?= $userAddress['city'] ?> <?= $userAddress['state_name'] ?> <?= $userAddress['country_name'] ?> <?= $userAddress['zip'] ?></p><?php }?>
                                     </address> 
                                 </td>
                             </tr>
