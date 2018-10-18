@@ -3,7 +3,7 @@
 use yii\widgets\ActiveForm;
 use yii\helpers\Html;
 use yii\helpers\Url;
-
+use common\models\Subscription;
 /* @var $this yii\web\View */
 /* @var $model common\models\User */
 
@@ -72,7 +72,9 @@ $priority = Yii::$app->params['priority'];
             </div>
             <div class="x_panel">
                 <div class="x_title">
-                    <h4> <i class="fa fa-address-card-o" aria-hidden="true"></i> Customer Detail <small><a target="blank" href="#" title="Open Profile"><i class="fa fa-user" aria-hidden="true"></i></a></small></h4>
+                    <h4> <i class="fa fa-address-card-o" aria-hidden="true"></i> Customer Detail <small>
+                            <?= Html::a(Yii::t('app', '<i class="fa fa-user" aria-hidden="true"></i>'), ['user/view-customer?id='.$ticket['ticket_owener']], ['class' => 'collapse-link']); ?>
+                           </small> 
                     <div class="clearfix"></div>
                 </div>
 
@@ -85,7 +87,11 @@ $priority = Yii::$app->params['priority'];
                             </tr>
                             <tr>
                                 <td style="max-width: 90px;"><label class="control-label">AMC Type</label></td>
-                                <td><p>Yes</p></td>
+                                <?php
+                                $subs = new Subscription();
+                                $active_subs = $subs->getSubscription($user['id'], "Active");
+                                ?>
+                                <td><p><?= (count($active_subs) > 0) ? "Yes" : "No"; ?></p></td>
                             </tr>
                             <tr>
                                 <td style="max-width: 90px;"><label class="control-label">Email</label></td>
@@ -99,10 +105,16 @@ $priority = Yii::$app->params['priority'];
                                 <td style="max-width: 90px;"><label class="control-label">Address</label></td>
                                 <td>
                                     <address>
-                                        <?php if(!empty($userAddress)){?>
-                                        <p><?= $userAddress['address_line1'] ?></p>
-                                        <p><?= $userAddress['address_line2'] ?> <?= $userAddress['land_mark'] ?></p>
-                                        <p><?= $userAddress['city'] ?> <?= $userAddress['state_name'] ?> <?= $userAddress['country_name'] ?> <?= $userAddress['zip'] ?></p><?php }else{echo "Not Available";}?>
+                                        <?php if (!empty($userAddress)) { ?>
+                                            <p><?= $userAddress['address_line1'] ?></p>
+                                            <p><?= $userAddress['address_line2'] ?> <?= $userAddress['land_mark'] ?></p>
+                                            <p><?= $userAddress['city'] ?> <?= $userAddress['state_name'] ?> <?= $userAddress['country_name'] ?> <?= $userAddress['zip'] ?></p>
+                                            <p><?= $userAddress['phon_no']?></p>
+                                            <p><?= $userAddress['email']?></p>
+                                            <p></p>
+                                                <?php } else {
+                                        echo "Not Available";
+                                    } ?>
                                     </address> 
                                 </td>
                             </tr>
@@ -112,6 +124,9 @@ $priority = Yii::$app->params['priority'];
                                 ?>
                                 <tr>
                                     <td><label class="control-label">Contact Person</label></td><td><?= $addData['contact-person'] ?></td>
+                                </tr>
+                                <tr>
+                                    <td><label class="control-label">Contact No.</label></td><td><?= $addData['contact'] ?></td>
                                 </tr>
                                 <tr>
                                     <td><label class="control-label">Company</label></td><td><?= $addData['company'] ?></td>
@@ -147,24 +162,24 @@ $priority = Yii::$app->params['priority'];
                             </div>
                         </div>
 
-                        
+
                         <ul class="list-unstyled timeline widget activity-list">
-                            <?php foreach ($ticketActivity as $activity) { ?>
-                            <li class="]<?= $activity['type'] ?>">
-                                <div class="block">
-                                    <div class="block_content">
-                                        <h2 class="title">
-                                            <a><?= $activity['subject'] ?></a>
-                                        </h2>
-                                        <div class="byline">
-                                            <span><i class="fa fa-clock-o" aria-hidden="true"></i> <?= $activity['created_on'] ?></span> by <a><?= $activity['activity_by'] ?></a>
+<?php foreach ($ticketActivity as $activity) { ?>
+                                <li class="]<?= $activity['type'] ?>">
+                                    <div class="block">
+                                        <div class="block_content">
+                                            <h2 class="title">
+                                                <a><?= $activity['subject'] ?></a>
+                                            </h2>
+                                            <div class="byline">
+                                                <span><i class="fa fa-clock-o" aria-hidden="true"></i> <?= $activity['created_on'] ?></span> by <a><?= $activity['activity_by'] ?></a>
+                                            </div>
+                                            <p class="excerpt"><?= $activity['text'] ?>
+                                            </p>
                                         </div>
-                                        <p class="excerpt"><?= $activity['text'] ?>
-                                        </p>
                                     </div>
-                                </div>
-                            </li>
-                            <?php } ?>
+                                </li>
+<?php } ?>
                         </ul>
 
                     </div>
@@ -259,7 +274,7 @@ $priority = Yii::$app->params['priority'];
                                                     <input type="file" accept=".png,.jpeg,.pdf,.doc,.docx,.xls" name="document" value="" />
                                                 </div>
                                             </div>-->
-    <?php ActiveForm::end(); ?>
+                            <?php ActiveForm::end(); ?>
                         <div class="form-group col-md-12 col-xs-12">
                             <button class="btn btn-primary submit-reply">Submit</button>
     <?= Html::a(Yii::t('app', 'Back'), ['/tickets'], ['class' => 'btn btn-primary ']); ?>

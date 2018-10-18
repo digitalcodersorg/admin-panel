@@ -159,7 +159,7 @@ class Ticket extends \yii\db\ActiveRecord {
         }
         return $search->asArray()->one();
     }
-    public static function search($params, $action = '', $role = '', $user_id = '') {
+    public static function search($params, $action = '', $role = '', $user_id = '', $limit = 20) {
         $utility = new Utility();
         $select = [Ticket::tableName() . '.*',
             'u1.username as created_by_name',
@@ -176,6 +176,11 @@ class Ticket extends \yii\db\ActiveRecord {
         $search->leftJoin(User::tableName() . ' as u3 ', 'u3.id = ' . Ticket::tableName() . '.ticket_owener');
         $search->leftJoin(User::tableName() . ' as u4 ', 'u4.id = ' . Ticket::tableName() . '.assigned_to');
         $search->leftJoin(Department::tableName() . ' as d ', 'd.id = ' . Ticket::tableName() . '.department_id');
+        if (!empty($params['owener'])) {
+            $search->where([Ticket::tableName() . '.ticket_owener' => $params['owener']]);
+            $search->orWhere([Ticket::tableName() . '.created_by' => $params['owener'] ]);
+        }
+
         if (!empty($params['id'])) {
             $search = $search->andWhere([Ticket::tableName() . '.ID' => $params['id']]);
         }
@@ -231,11 +236,8 @@ class Ticket extends \yii\db\ActiveRecord {
         if (!empty($params['department'])) {
             $search = $search->andWhere([Ticket::tableName() . '.department_id' => $params['department']]);
         }
-        if (!empty($params['owener'])) {
-            $search = $search->andWhere([Ticket::tableName() . '.ticket_owener' => $params['owener']]);
-        }
-
-
+        
+        
         if (!empty($params['search_text'])) {
             $keywoed = $utility->validateSearchKeywords($params['search_text']);
             $search->andFilterWhere([
@@ -249,17 +251,20 @@ class Ticket extends \yii\db\ActiveRecord {
         }
         $page = isset($params['page']) ? (int) $params['page'] : 1;
         //$limit = Yii::$app->params['ticket_count'];
-        $limit = 20;
+        
         $offset = ($page - 1) * $limit;
 //return total tweet count if action is count
-        if (!empty($action) && $action === 'count') {
+        if (!empty($action) && $action == 'count') {
+           // echo $search->createCommand()->sql;
             return $search->count();
         }
-
+//        echo '<pre>';
+//        echo $search->createCommand()->sql;
+//        die;
         $pagination = new Pagination(['totalCount' => $search->count(), 'defaultPageSize' => $limit]);
         $data = $search->limit($limit)
                 ->offset($offset)
-                ->orderBy(['created_on' => SORT_DESC])
+                ->orderBy(['updated_on' => SORT_DESC])
                 ->asArray()
                 ->all();
         return [
@@ -361,22 +366,9 @@ class Ticket extends \yii\db\ActiveRecord {
         }
         $cq1 = '';
         $cq2 = '';
-//        if ($status == '' || $status == 'Closed') {
-//            $cq1 = '+(SELECT sum(`annual`) FROM tbl_cms_user)';
-//            $cq2 = '+(SELECT sum(`all`) FROM tbl_cms_user)';
-//        }
-        $sql = "select (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE (t.created_on between DATE_FORMAT(NOW() ,'%Y-%m-%d') AND NOW())
-                 " . $condStatus . ") as counttoday,
-                  (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE (date(created_on) =date(CURDATE() - INTERVAL 1 DAY))
-                 " . $condStatus . ") as countyesterday,
-                  (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE (t.created_on between DATE_FORMAT(NOW() ,'%Y-%m-01') AND NOW())
-                 " . $condStatus . ") as countthismonth,
-                (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE (t.created_on between DATE_FORMAT(NOW() ,'" . $firstDateOflastMonth . "') AND DATE_FORMAT(NOW() ,'" . $lastDateOfLastMonth . "'))
-                 " . $condStatus . ") as countpreviousmonth,
-                (SELECT COUNT(t.ID) FROM pnl_tickets t
-                WHERE (t.created_on between DATE_FORMAT(NOW() ,'%Y-01-01') AND NOW()) " . $condStatus . ")" . $cq1 . " as countannual,
-                (SELECT COUNT(t.ID) FROM pnl_tickets t
-                 " . $condStatus1 . " )" . $cq2 . " as countall;";
+        $m = date("m");
+        $last_month = ($m < 2) ? 'MONTH(t.created_on) = MONTH(DATE_ADD(Now(), INTERVAL -1 MONTH)) AND YEAR(t.created_on) = (YEAR(CURRENT_DATE)-1)' : 'MONTH(t.created_on) = MONTH(DATE_ADD(Now(), INTERVAL -1 MONTH)) AND YEAR(t.created_on) = YEAR(CURRENT_DATE)';
+        $sql = "select (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE date(created_on) =date(CURDATE())  " . $condStatus . ") as counttoday, (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE (date(t.created_on) =date(CURDATE() - INTERVAL 1 DAY)) " . $condStatus . ") as countyesterday, (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE MONTH(t.created_on) = MONTH(CURRENT_DATE) AND YEAR(t.created_on) = YEAR(CURRENT_DATE) " . $condStatus . ") as countthismonth, (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE ".$last_month. " " . $condStatus . ") as countpreviousmonth, (SELECT COUNT(t.ID) FROM pnl_tickets t WHERE (YEAR(t.created_on) = YEAR(CURDATE()) " . $condStatus . ")" . $cq1 . " ) as countannual, (SELECT COUNT(t.ID) FROM pnl_tickets t " . $condStatus1 . " )" . $cq2 . " as countall;";
         
         $command = $connection->createCommand($sql);
         if (!empty($status)) {
@@ -410,29 +402,41 @@ class Ticket extends \yii\db\ActiveRecord {
     }
     public static function insertTicket($post){
         $subscription = new Subscription();
-        $activeSubs = $subscription->getSubscription(empty($post['ticket_owener']) ? Yii::$app->user->identity->id : $post['ticket_owener'], "Active");
+        $activeSubs = $subscription->getSubscription($post['ticket_owener'], "Active");
         $ticket = new Ticket();
         $ticket->ticket_text = $post['ticket_text'];
         $ticket->ticket_priority = $post['priority'];
         $ticket->ticket_status = "Open";
-        $ticket->category = ($activeSubs > 0) ? "AMC" : "NON AMC";
+        $ticket->category = (count($activeSubs) > 0) ? "AMC" : "NON AMC";
         $ticket->department_id = empty($post['department_id']) ? NULL : $post['department_id'];
         $ticket->assigned_to = empty($post['assigned_to']) ? NULL : $post['assigned_to'];
-        $ticket->assigned_by = (empty($post['assigned_by']) ? Yii::$app->user->identity->id : $post['assigned_by']);
+        $ticket->assigned_by = (empty($post['assigned_by']) ? NULL : $post['assigned_by']);
         $ticket->ticket_subject = $post['subject'];
         $ticket->ticket_code = $ticket->generateTicketCode();
-        $ticket->ticket_owener = (empty($post['ticket_owener']) ? Yii::$app->user->identity->id : $post['ticket_owener']);
+        $ticket->ticket_owener = (empty($post['ticket_owener']) ? $post['created_by'] : $post['ticket_owener']);
         $ticket->ticket_contacts = empty($post['ticket_contact']) ? NULL : json_encode($post['ticket_contact']);
         $ticket->created_by = (empty($post['created_by']) ? Yii::$app->user->identity->id : $post['created_by']);
         $ticket->updated_by = (empty($post['created_by']) ? Yii::$app->user->identity->id : $post['created_by']);
         $ticket->created_on = date('Y-m-d H:i:s');
-        $ticket->created_on = date('Y-m-d H:i:s');
+        $ticket->updated_on = date('Y-m-d H:i:s');
         $ticket->status_updated_on = date('Y-m-d H:i:s');
         if($ticket->validate()){
             $ticket->save();
+            $usera = empty($post['ticket_owener']) ? $post['created_by'] : $post['ticket_owener'];
+            $user = User::find()->where(['id'=>$usera])->asArray()->one();
+            EmailNotification::addEmailToSend([
+                    'to_emails' => array($user['email'] => $user['username']),
+                    'to_name' => $user['username'],
+                    'subject' => 'Ticket Created Successfully - Japman Technologies Pvt Ltd',
+                    'email_body' => json_encode([
+                        'ticket_no' => $ticket->ticket_code,
+                    ]),
+                    'template_name' => 'create_ticket',
+                    'created_by' => $post['created_by'],
+                ]);
             return $ticket->ID;
         }else{
-            print_r($ticket->getErrors());
+            return false;
         }
         return null;
     }

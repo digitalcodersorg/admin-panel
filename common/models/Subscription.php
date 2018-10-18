@@ -22,27 +22,25 @@ use Yii;
  * @property string $created_on
  * @property string $updated_on
  *
- * @property CmsUser $subscriber
- * @property CmsUser $createdBy
- * @property CmsUser $updatedBy
+ * @property User $subscriber
+ * @property User $createdBy
+ * @property User $updatedBy
  * @property UserAddress $address0
  * @property SubscriptionItem[] $subscriptionItems
  */
-class Subscription extends \yii\db\ActiveRecord
-{
+class Subscription extends \yii\db\ActiveRecord {
+
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
-    {
+    public static function tableName() {
         return '{{%subscription}}';
     }
 
     /**
      * {@inheritdoc}
      */
-    public function rules()
-    {
+    public function rules() {
         return [
             [['subscription_numebr'], 'required'],
             [['subscriber_id', 'subscription_period', 'item_quntity', 'address', 'created_by', 'updated_by'], 'integer'],
@@ -50,9 +48,9 @@ class Subscription extends \yii\db\ActiveRecord
             [['start_date', 'end_date', 'created_on', 'updated_on'], 'safe'],
             [['subscription_numebr'], 'string', 'max' => 50],
             [['subscription_numebr'], 'unique'],
-            [['subscriber_id'], 'exist', 'skipOnError' => true, 'targetClass' => CmsUser::className(), 'targetAttribute' => ['subscriber_id' => 'id']],
-            [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => CmsUser::className(), 'targetAttribute' => ['created_by' => 'id']],
-            [['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => CmsUser::className(), 'targetAttribute' => ['updated_by' => 'id']],
+            [['subscriber_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['subscriber_id' => 'id']],
+            [['created_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['created_by' => 'id']],
+            [['updated_by'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['updated_by' => 'id']],
             [['address'], 'exist', 'skipOnError' => true, 'targetClass' => UserAddress::className(), 'targetAttribute' => ['address' => 'ID']],
         ];
     }
@@ -60,8 +58,7 @@ class Subscription extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
-    {
+    public function attributeLabels() {
         return [
             'ID' => Yii::t('app', 'ID'),
             'subscription_numebr' => Yii::t('app', 'Subscription Numebr'),
@@ -83,63 +80,83 @@ class Subscription extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getSubscriber()
-    {
-        return $this->hasOne(CmsUser::className(), ['id' => 'subscriber_id']);
+    public function getSubscriber() {
+        return $this->hasOne(User::className(), ['id' => 'subscriber_id']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCreatedBy()
-    {
-        return $this->hasOne(CmsUser::className(), ['id' => 'created_by']);
+    public function getCreatedBy() {
+        return $this->hasOne(User::className(), ['id' => 'created_by']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getUpdatedBy()
-    {
-        return $this->hasOne(CmsUser::className(), ['id' => 'updated_by']);
+    public function getUpdatedBy() {
+        return $this->hasOne(User::className(), ['id' => 'updated_by']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getAddress0()
-    {
+    public function getAddress0() {
         return $this->hasOne(UserAddress::className(), ['ID' => 'address']);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getSubscriptionItems()
-    {
+    public function getSubscriptionItems() {
         return $this->hasMany(SubscriptionItem::className(), ['subcription_id' => 'ID']);
     }
-    public function getSubscription($user, $status){
-        if(!empty($user)){
+
+    public function getSubscription($user, $status) {
+        if (!empty($user)) {
             $search = $this::find();
-            if(!empty($status)){
-                $search->where(['`status`'=>$status]);
+            if (!empty($status)) {
+                $search = $search->where(['`status`' => $status]);
+            }
+            if (!empty($user)) {
+                $search = $search->andWhere(['subscriber_id' => $user]);
             }
             return $search->orderBy(['created_on' => SORT_DESC])
-                ->asArray()
-                ->all();
+                            ->asArray()
+                            ->all();
         }
         return null;
     }
-    public static function getCounts($status = '', $type = ''){
+
+    public static function getCounts($status = '', $type = '') {
         $search = Subscription::find();
-        if(!empty($status)){
-            $search->where(['`status`'=>$status]);
+        if (!empty($status)) {
+            $search->where(['`status`' => $status]);
         }
-        if($type == 'count'){
+        if ($type == 'count') {
             return $search->count();
         }
-        
+
         return $search->asArray()->all();
     }
+
+    public function saveSubscription($post) {
+        if (empty($post['sub_no'])) {
+            $subscription = new Subscription();
+            $subscription->created_on = date('Y-m-d H:i:s');
+            $subscription->created_by = 1;
+        } else {
+            $subscription = Subscription::find()->where(['subscription_numebr' => $post['sub_no']])->one();
+        }
+        $subscription->updated_on = date('Y-m-d H:i:s');
+        $subscription->updated_by = 1;
+        if ($subscription->load($post)) {
+            if ($subscription->validate()) {
+                $subscription->save();
+                return $subscription;
+            }
+        }
+        return null;
+    }
+
 }

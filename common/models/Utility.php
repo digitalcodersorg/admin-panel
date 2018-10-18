@@ -386,7 +386,6 @@ class Utility {
     }
 
     function formateDate($timestamp) {
-        date_default_timezone_set('Asia/Kolkata');
         $date = new \DateTime();
         $date->format('U = Y-m-d H:i:s') . "\n";
         $date->setTimestamp(date($timestamp));
@@ -396,10 +395,25 @@ class Utility {
     function getTimestamp($date = 'now') {
 //        $d = new \DateTime($date);
         //$dm = $d->setTimezone(new \DateTimeZone('Asia/Kolkata'));
-        $dm = new \DateTime($date, new \DateTimeZone('Asia/Kolkata'));
+//        $dm = new \DateTime($date, new \DateTimeZone('Asia/Kolkata'));
+        $dm = new \DateTime($date);
         $dm->format('Y-m-d g:i A');
         $timestamp = $dm->getTimestamp();
         return $timestamp;
     }
-
+    public function getSqlConnection($ip_address, $username, $password, $database) {
+        $dsn = 'mysql:dbname=' . $database . ';host=' . $ip_address;
+        try {
+            $connection = new \yii\db\Connection([
+                'dsn' => $dsn,
+                'username' => $username,
+                'password' => $password,
+                'charset' => 'utf8'
+            ]);
+            $connection->open();
+            return $connection;
+        } catch (\yii\db\Exception $e) {
+            return $e->getMessage();
+        }
+    }
 }

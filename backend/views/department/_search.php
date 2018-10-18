@@ -21,7 +21,8 @@ use yii\widgets\ActiveForm;
          <?= $form->field($model, 'type')->dropDownList(['branch' => 'Branch', 'Department' => 'Department'], ['prompt' => 'Select Type'])->label(false) ?>
     </div>
     <?= Html::submitButton(Yii::t('app', 'Search'), ['class' => 'btn btn-primary']) ?>
-    <?= Html::resetButton(Yii::t('app', 'Reset'), ['class' => 'btn btn-default']) ?>
+    
+     <?= Html::a(Yii::t('app', 'Reset'), ['/department'], ['class' => 'btn btn-default']) ?>
     <?= Html::a(Yii::t('app', 'Create'), ['update'], ['class' => 'btn btn-success']) ?>
     <?php ActiveForm::end(); ?>
 

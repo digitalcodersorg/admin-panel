@@ -50,7 +50,7 @@ use yii\helpers\Url;
                                                 <li>
                                                     <a href="javascript:;">Help</a>
                                                 </li>-->
-                        <li><a href="<?= Url::to(['logout']) ?>"><i class="fa fa-sign-out pull-right"></i> Log Out</a>
+                        <li><a href="<?= Url::to(['/logout']) ?>"><i class="fa fa-sign-out pull-right"></i> Log Out</a>
                         </li>
                     </ul>
                 </li>

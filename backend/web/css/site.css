@@ -542,3 +542,6 @@ ul.dropdown-menu.searched-text {
     font-size: 15px;
     padding: 3px 10px;
 }
+.pagination {
+    margin-top: -5px;
+}

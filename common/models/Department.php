@@ -180,6 +180,14 @@ class Department extends \yii\db\ActiveRecord
         $result = $command->execute();
         return $result;
     }
+    public function findBranch($department_id){
+        $db = \Yii::$app->db;
+        $sql = "select * from pnl_department where ID in (select parent from pnl_department where ID=:department_id)";
+        $command = $db->createCommand($sql);
+        $command->bindValue(':department_id',$department_id);
+        $result = $command->queryAll();
+        return $result;
+    }
 
 
     /** **************************************************

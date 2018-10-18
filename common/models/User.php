@@ -7,6 +7,7 @@ use yii\base\NotSupportedException;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
 use common\models\Utility;
+use yii\data\Pagination;
 
 /**
  * User model
@@ -53,7 +54,7 @@ class User extends ActiveRecord implements IdentityInterface {
         return [
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             [['username', 'email', 'status', 'first_name'], 'required'],
-            ['username', 'safe', 'except'=>'update'],
+            ['username', 'safe', 'except' => 'update'],
             ['confirm_password', 'required', 'when' => function($model) {
                     return $model->password_hash != '';
                 }, 'enableClientValidation' => false],
@@ -100,16 +101,30 @@ class User extends ActiveRecord implements IdentityInterface {
     public function search($params = "", $type = 'cms_user', $array = false) {
         $find = User::find();
         $utility = new Utility();
-        
+
         if (!empty($params['username'])) {
-        $find->filterWhere(['like', 'username', $utility->validateSearchKeywords($params['username'])])
-               ->orFilterWhere(['like', 'email', $utility->validateSearchKeywords($params['username'])]);
+            $find->filterWhere(['like', 'username', $utility->validateSearchKeywords($params['username'])])
+                    ->orFilterWhere(['like', 'email', $utility->validateSearchKeywords($params['username'])]);
         }
         $find->andWhere(['type' => $type]);
-        if($array){
-            return  $find->orderBy(['updated_at' => SORT_DESC])->asArray()->all();
+        if ($type == 'frontend_user') {
+            $page = isset($params['page']) ? (int) $params['page'] : 1;
+            $offset = ($page - 1) * 10;
+            $pagination = new Pagination(['totalCount' => $find->count(), 'defaultPageSize' => 10]);
+            $find = $find->limit(10)->offset($offset);
         }
-        return $find->orderBy(['updated_at' => SORT_DESC])->all();
+        if ($array) {
+            $data = $find->orderBy(['updated_at' => SORT_DESC])->asArray()->all();
+        }
+        $data = $find->orderBy(['updated_at' => SORT_DESC])->all();
+        if ($type == 'cms_user') {
+            return $data;
+        } else {
+            return [
+                'data' => $data,
+                'pagination' => $pagination
+            ];
+        }
     }
 
 //    public function getUsermeta($user_id = '', $key = '', $single = false) {
@@ -294,20 +309,22 @@ class User extends ActiveRecord implements IdentityInterface {
     /**     * *************************************************
      *            Getting Users By id              Ends   *
      * **************************************************** */
+
     /**     * *************************************************
      *            Getting User By department id       Ends*
      * **************************************************** */
-    public static function getUserByDepartment($department_id='', $status=''){
-        if(empty($department_id)){
+    public static function getUserByDepartment($department_id = '', $status = '') {
+        if (empty($department_id)) {
             return [];
         }
         $db = \Yii::$app->db;
-        $sql = "select cu.id,cu.username from pnl_cms_user cu join pnl_department_user du on cu.id = du.user_id where du.department_id = :did ";
+        $sql = "select cu.id,cu.username from pnl_cms_user cu join pnl_department_user du on cu.id = du.user_id where cu.status = 'Active' and du.department_id = :did ";
         $command = $db->createCommand($sql);
         $command->bindValue(':did', $department_id);
         $result = $command->queryAll();
         return $result;
-    } 
+    }
+
     /**     * *************************************************
      *            Getting Users By emailid         Starts *
      * **************************************************** */
@@ -377,8 +394,9 @@ class User extends ActiveRecord implements IdentityInterface {
         $result = $command->execute();
         return $result;
     }
-    public function addUserMeta($meta_key, $value, $user_id){
-            if(!empty($meta_key) && !empty($user_id)){
+
+    public function addUserMeta($meta_key, $value, $user_id) {
+        if (!empty($meta_key) && !empty($user_id)) {
             $db = \Yii::$app->db;
             $sql = "insert into pnl_user_meta(user_id,meta_key,meta_value) values(:user_id,:meta_key,:meta_value)";
             $command = $db->createCommand($sql);
@@ -387,12 +405,13 @@ class User extends ActiveRecord implements IdentityInterface {
             $command->bindValue(':user_id', $user_id);
             $result = $command->execute();
             return $result;
-            }else{
-                return false;
-            }
+        } else {
+            return false;
+        }
     }
-    public function updateUserMeta($meta_key, $value, $user_id){
-            if(!empty($meta_key) && !empty($user_id)){
+
+    public function updateUserMeta($meta_key, $value, $user_id) {
+        if (!empty($meta_key) && !empty($user_id)) {
             $db = \Yii::$app->db;
             $sql = "update pnl_user_meta set meta_value = :meta_value where meta_key = :meta_key and user_id = :user_id";
             $command = $db->createCommand($sql);
@@ -401,25 +420,26 @@ class User extends ActiveRecord implements IdentityInterface {
             $command->bindValue(':user_id', $user_id);
             $result = $command->execute();
             return $result;
-            }else{
-                return false;
-            }
+        } else {
+            return false;
+        }
     }
-    public function getUserMeta($uid = '', $key = ''){
+
+    public function getUserMeta($uid = '', $key = '') {
         $db = \Yii::$app->db;
-        if(!empty($key) && !empty($uid)){
+        if (!empty($key) && !empty($uid)) {
             $sql = "select * from pnl_user_meta where meta_key = :key and user_id = :uid";
             $command = $db->createCommand($sql);
             $command->bindValue(':key', $key);
             $command->bindValue(':uid', $uid);
             $result = $command->queryOne();
             return $result['meta_value'];
-        }else if(!empty($key) && empty($key)){
+        } else if (!empty($key) && empty($key)) {
             $sql = "select * from pnl_user_meta where meta_key = :key";
             $command = $db->createCommand($sql);
             $command->bindValue(':key', $key);
             return $result = $command->queryAll();
-        }else if(empty($key) && !empty($key)){
+        } else if (empty($key) && !empty($key)) {
             $sql = "select * from pnl_user_meta where user_id = :uid";
             $command = $db->createCommand($sql);
             $command->bindValue(':uid', $uid);
@@ -427,19 +447,21 @@ class User extends ActiveRecord implements IdentityInterface {
         }
         return NULL;
     }
-    public static function getCount($from = '', $type = ''){
+
+    public static function getCount($from = '', $type = '') {
         $search = User::find();
-        $search->where(['type'=>'frontend_user']);
-        if(!empty($from)){
+        $search->where(['type' => 'frontend_user']);
+        if (!empty($from)) {
             $andWhere = ['>=', User::tableName() . '.created_at', date_format(date_create($from), "Y-m-d H:i:s")];
             $search = $search->andWhere($andWhere);
         }
-        if($type == 'count'){
+        if ($type == 'count') {
             return $search->count();
         }
         return $search->asArray()->all();
     }
-    public function insertUser($post){
+
+    public function insertUser($post) {
         $user = new User();
         $user->username = $post['username'];
         $user->first_name = $post['first_name'];
@@ -452,11 +474,11 @@ class User extends ActiveRecord implements IdentityInterface {
         $user->updated_by = 1;
         $user->created_at = date('Y-m-d H:i:s');
         $user->updated_at = date('Y-m-d H:i:s');
-        if($user->validate()){
+        if ($user->validate()) {
             $user->save();
             return $user;
         }
         return null;
     }
-   
+
 }

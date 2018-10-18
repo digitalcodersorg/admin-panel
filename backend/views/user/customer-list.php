@@ -2,7 +2,7 @@
 
 use yii\helpers\Html;
 use yii\widgets\LinkPager;
-
+use common\models\Subscription;
 /* @var $this yii\web\View */
 /* @var $searchModel backend\models\DepartmentSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -31,10 +31,10 @@ $user = new common\models\User;
                     <th class="column-title">Company Name</th>
                     <th class="column-title">Email</th>
                     <th class="column-title">Phone</th>
-                    <th class="column-title">AMC Type</th>
-                    <th class="column-title">Updated On</th>
+                    <th class="column-title" style="min-width: 80px;">AMC Type</th>
+                    <th class="column-title" style="min-width: 140px;">Updated On</th>
                     <?php if (Yii::$app->user->can('update-customer-info') || Yii::$app->user->can('view-customer-info')) { ?>
-                    <th class="column-title no-link last"><span class="nobr">Action</span>
+                    <th class="column-title no-link last" style="min-width: 80px;"><span class="nobr">Action</span>
                     <?php }?>
                     </th>
                 </tr>
@@ -47,7 +47,11 @@ $user = new common\models\User;
                         <td><?= $user->getUsermeta($user->id, 'Company Name') ?></td>
                         <td><?= $user->email ?></td>
                         <td><?= $user->cms_user_contact_no ?></td>
-                        <td>Yes</td>
+                        <?php 
+                            $subs = new Subscription();
+                            $active_subs = $subs->getSubscription($user->id, "Active");
+                        ?>
+                        <td><?= (count($active_subs) > 0) ? "Yes" : "No"; ?></td>
                         <td><?= $user->updated_at ?></td>
                         <?php if (Yii::$app->user->can('update-customer-info') || Yii::$app->user->can('view-customer-info')) { ?>
                         <td>
@@ -66,7 +70,7 @@ $user = new common\models\User;
                 'pagination' => $pages,
             ]);
             ?>
-        </div>
-
+        </div> 
     </div>
 </div>
+

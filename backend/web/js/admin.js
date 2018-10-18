@@ -44,6 +44,26 @@ $(document).ready(function () {
         }
 
     });
+    //$('#create-new-ticket').submit(function (e) {
+    $('#create-new-tkt-btn').click(function (e) {
+        e.preventDefault();
+        var error = false;
+        jQuery(".required-input").each(function (index) {
+            if (!jQuery.trim(this.value).length) {
+                error = true;
+                jQuery(this).parents('.form-group').addClass('has-error');
+
+            } else {
+                jQuery(this).parents('.form-group').removeClass('has-error');
+
+            }
+        });
+        if(error){
+            
+        }else{
+            $('#create-new-ticket').submit();
+        }
+    });
     /************************************/
 
     //FROM TO DATE SELECTOR By ID
@@ -85,6 +105,14 @@ $(document).ready(function () {
             $(this).data('DateTimePicker').date(new Date(new Date(e.date).setHours(23, 59, 59)));
         }
         $('.FrDate').data("DateTimePicker").maxDate(e.date);
+    });
+    /****************DOWNLOAD TICKET********************************/
+    $('.download-ticket').click(function(e){
+        e.preventDefault();
+        $('.search-form').attr('action','/support/ticket/download');
+        $('.search-form').submit();
+        $('.search-form').attr('action','/support/tickets');
+       
     });
     /************************SET AUTO REFRESH    *********************/
     if ($('.auto-refresh').length) {
@@ -221,7 +249,7 @@ $(document).ready(function () {
                 },
                 success: function (data, textStatus, jqXHR) {
                     var data = jQuery.parseJSON(data);
-                    console.log(props.id);
+                   
                     if (props.id === "") {
                         $('.todo-template .todo-text').val(props.text);
                         if (data.error !== "0") {
@@ -239,7 +267,7 @@ $(document).ready(function () {
                                 .removeClass('todo-template');
                         //.attr("id", new_id);
                         if ($("ul.to_do").children().length > 11) {
-                            console.log('remove some element');
+                           // console.log('remove some element');
                         }
                         $clone.insertAfter($('#todo-editor'));
                         bindTodoDelete();
@@ -293,38 +321,38 @@ $(document).ready(function () {
             }
         });
         var doneTyping = () => {
-            let s =  $('.search-user').val();
+            let s = $('.search-user').val();
             window.XMLHttpRequest = xhr;
-            
+
             $.ajax({
                 url: JS_BASE_URL + "api/get-user-data",
                 type: 'GET',
-                data: {ID : "", search : s},
+                data: {ID: "", search: s},
                 beforeSend: function (xhr) {
-                    $('.searched-text').css("display","block");
+                    $('.searched-text').css("display", "block");
                     $('.searched-text').block({message: $('#block-ui')});
                 },
                 success: function (data, textStatus, jqXHR) {
                     $('.searched-text').unblock();
                     let users = jQuery.parseJSON(data);
                     let html = "";
-                    if(users.length){
-                    $.each(users, function(k,v){
-                       html += '<li><a href="#" data-user="'+v.id+'">'+v.username+'</a></li>';
-                       
-                    });
-                    }else{
-                        html += '<li><a href="#" data-user="">Not Found...</a></li>'; 
+                    if (users.data.length) {
+                        $.each(users.data, function (k, v) {
+                            html += '<li><a href="#" data-user="' + v.id + '">' + v.username + '</a></li>';
+
+                        });
+                    } else {
+                        html += '<li><a href="#" data-user="">Not Found...</a></li>';
                     }
                     $('.searched-text').html(html);
-                       $('.searched-text a').unbind('click');
-                       $('.searched-text a').click(function(){
-                           console.log($(this).data('user'));   
-                           $('input[name="ticket_owener"]').val($(this).data('user'));
-                           $('.search-user').val($(this).text());
-                           $('.searched-text').css("display","none");
+                    $('.searched-text a').unbind('click');
+                    $('.searched-text a').click(function () {
+                        //console.log($(this).data('user'));
+                        $('input[name="ticket_owener"]').val($(this).data('user'));
+                        $('.search-user').val($(this).text());
+                        $('.searched-text').css("display", "none");
                     });
-                       
+
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     $('.searched-text').unblock();
@@ -358,6 +386,7 @@ $(document).ready(function () {
             $.ajax({
                 url: JS_BASE_URL + "api/get-todo",
                 type: 'GET',
+                cache:false,
                 data: {uid: props.user, page: props.page},
                 beforeSend: function (xhr) {
                     //$('#todo-save').block({message: $('#block-ui')});
@@ -365,7 +394,7 @@ $(document).ready(function () {
                 success: function (data, textStatus, jqXHR) {
                     var data = jQuery.parseJSON(data);
                     if (data.data.length <= 0) {
-                        alert('Nothing Found!');
+                        //alert('Nothing Found!');
                         $('.load-todo').text('Reset');
                         $('.load-todo').data('current', 0);
                         return;
@@ -419,7 +448,14 @@ $(document).ready(function () {
 
         if ($('#ticket_status').length) {
             $('#ticket_status').change(function () {
-
+                
+                
+                if($(this).val() === "Closed"){
+                    alert("Instead of Closed select Resolve status");
+                    $('#ticket_status').val("Resolve");
+                    return;
+                }
+                
                 if ($(this).val() === 'Forward') {
                     $('#user-select').collapse('show');
                 } else {
@@ -546,7 +582,6 @@ $(document).ready(function () {
                         $.each(jsondata, function (v, k) {
                             html += '<option value="' + k.ID + '">' + k.name + '</option>';
                         });
-                        console.log(dpr);
                         $('#' + dpr).html(html);
                         //$('#user_list').html('<option>Select Department</option>');
                         //$('#user_list').addClass('disabled');
@@ -569,7 +604,6 @@ $(document).ready(function () {
                         alert('Select user for forward ticket.');
                         return;
                     }
-                    console.log('sumit form ');
                     window.XMLHttpRequest = xhr;
                     $.ajax({
                         url: JS_BASE_URL + 'ticket/update',
@@ -605,7 +639,7 @@ $(document).ready(function () {
                         error: function (jqXHR, textStatus, errorThrown) {
                             $.unblockUI();
                             alert('Internal Error! Please try again.');
-                            console.log(jqXHR);
+                            //console.log(jqXHR);
                         }
                     });
                     window.XMLHttpRequest = null;
@@ -673,7 +707,7 @@ $(document).ready(function () {
                 error: function (jqXHR, textStatus, errorThrown) {
                     $.unblockUI();
                     alert('Internal Error! Please try again.');
-                    console.log(jqXHR);
+                    //console.log(jqXHR);
                 }
 
             });
@@ -691,7 +725,7 @@ $(document).ready(function () {
                 success: function (data, textStatus, jqXHR) {
                     $.unblockUI();
                     //var jsondata = jQuery.parseJSON(data);
-                    console.log(data);
+                    //console.log(data);
 
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -713,7 +747,7 @@ $(document).ready(function () {
                 },
                 success: function (data, textStatus, jqXHR) {
                     $.unblockUI();
-                    console.log(data);
+                    //console.log(data);
                     $('.error-summary').addClass('hide');
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
@@ -728,10 +762,10 @@ $(document).ready(function () {
             if (confirm('Are you sure want to delete this data!')) {
                 var id = $(this).data('id');
                 $('#' + id).remove();
-                console.log('User ');
+                //console.log('User ');
                 $('.error-summary').removeClass('hide');
             } else {
-                console.log('User not');
+                //console.log('User not');
             }
         });
         $('#add-data-field').click(function () {
@@ -772,7 +806,7 @@ $(document).ready(function () {
                         $(this).parent().parent().remove();
                         $('.error-summary').removeClass('hide');
                     } else {
-                        console.log('User not');
+                        //console.log('User not');
                     }
                 });
                 $('#data-template .meta_key').attr('name', '');
@@ -797,6 +831,7 @@ $(document).ready(function () {
                     $.unblockUI();
                     let data = jQuery.parseJSON(response);
                     $('#add-pc-info').data('amc', data.subcription.ID);
+                    $('.load-item-data').data('amc', data.subcription.ID);
                     $('#device-form-amc-no').val(data.subcription.ID);
                     $('#device-form-item-id').val("");
                     $('input[name="sub_start"]').val(data.subcription.start_date);
@@ -857,9 +892,33 @@ $(document).ready(function () {
         $('.load-item-data').click(function () {
             window.XMLHttpRequest = xhr;
             $('.table-responsive').removeClass('hide');
-            var amc = $('#add-pc-info').data('amc');
+            var amc = $(this).data('amc');
 
             itrmTable.ajax.url(JS_BASE_URL + 'api/get-item?sid=' + amc).load(function () {
+                $('.view-item').unbind('click');
+                $('.view-item').click(function(){
+                    let id = $(this).data('id');
+                    let sid = $(this).data('sid');
+                    getSubItems(id, sid).then(function (data) {
+                        let itemdata = data;
+                        var html = '';
+                        html += '<tr><td><p><strong>Type</strong> </td><td> : <span>'+ itemdata.type +'</span></p></td></tr>';
+                        html += '<tr><td><p><strong>Name</strong></td><td> : <span>'+ itemdata.name +'</span></p></td></tr>';
+                        html += '<tr><td><p><strong>Serial No</strong></td><td> : <span>'+ itemdata.serial_no +'</span></p></td></tr>';
+                        html += '<tr><td><p><strong>Quantity</strong> </td><td> : <span>'+ itemdata.quantity +'</span></p></td></tr>';
+                        html += '<tr><td><p><strong>MAC LAN</strong></td><td> : <span>'+ itemdata.mac_lan +'</span></p></td></tr>';
+                        html += '<tr><td><p><strong>MAC WIFI</strong></td><td> : <span>'+ itemdata.mac_wifi +'</span></p></td></tr>';
+                        html += '<tr><td><p><strong>Owener</strong></td><td> : <span>'+ itemdata.owener +'</span></p></td></tr>';
+                        html += '<tr><td><p><strong>Phone</strong></td><td> : <span>'+ itemdata.phone +'</span></p></td></tr>';
+                        html += '<tr><td><p><strong>Last Updated</strong></td><td> : <span>'+ itemdata.updated_on +'</span></p></td></tr>';
+                        $('#pc-info-view-modal .modal-body').html(html);
+                        $('#pc-info-view-modal').modal('show');
+                        console.log(itemdata);
+                    }).catch(function (err) {
+                        // Run this when promise was rejected via reject()
+                        alert('Internal Error.');
+                    });
+                });
                 $('.edit-item').unbind('click');
                 $('.edit-item').click(function () {
                     let id = $(this).data('id');
@@ -911,7 +970,7 @@ $(document).ready(function () {
                 });
             });
 
-            console.log('reload');
+            //console.log('reload');
             window.XMLHttpRequest = null;
         });
 
@@ -935,7 +994,6 @@ $(document).ready(function () {
                 }).done(function (result) {
                     jdata = jQuery.parseJSON(result);
                     $.unblockUI();
-                    console.log('hello');
                     resolve(jdata);
 
                 });
@@ -962,7 +1020,14 @@ $(document).ready(function () {
                 {data: "quantity"},
                 {data: "Action",
                     render: function (data, type, row) {
-                        return '<a href="javascript:void(0)" class="edit-item" data-id="' + row.ID + '" data-sid="' + row.subcription_id + '"><i class="fa fa-pencil" aria-hidden="true"></i></a> || <a href="javascript:void(0)" class="delete-item" data-id="' + row.ID + '" data-sid="' + row.subcription_id + '"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                        console.log(JS_SUB_IT_UP_PERM);
+                        var btn = '<a href="javascript:void(0)" class="view-item" data-id="' + row.ID + '" data-sid="' + row.subcription_id + '"><i class="fa fa-eye" aria-hidden="true"></i></a>';
+                        var update = '<a href="javascript:void(0)" class="edit-item" data-id="' + row.ID + '" data-sid="' + row.subcription_id + '"><i class="fa fa-pencil" aria-hidden="true"></i></a>';
+                        var delet = '<a href="javascript:void(0)" class="delete-item" data-id="' + row.ID + '" data-sid="' + row.subcription_id + '"><i class="fa fa-trash" aria-hidden="true"></i></a>';
+                        if(JS_SUB_IT_UP_PERM){
+                           btn += " || " + update + " || " + delet;  
+                        }
+                        return btn;
 
                     }
                 }

@@ -60,10 +60,10 @@ class DepartmentSearch extends Department
 //            'updated_on' => $this->updated_on,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name])
-            ->andFilterWhere(['like', 'description', $this->description])
-            ->andFilterWhere(['like', 'type', $this->type]);
-        $query->orderBy(['updated_on'=>SORT_DESC]);
+        $query->andFilterWhere(['like', Department::tableName().'.name', $this->name])
+            ->andFilterWhere(['like', Department::tableName().'.description', $this->description])
+            ->andFilterWhere(['like', Department::tableName().'.type', $this->type]);
+        $query->orderBy([Department::tableName().'.updated_on'=>SORT_DESC]);
         return $query->createCommand()->queryAll();
     }
 }

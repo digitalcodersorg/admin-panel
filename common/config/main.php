@@ -6,12 +6,12 @@ return [
     ],
     'vendorPath' => dirname(dirname(__DIR__)) . '/vendor',
     'components' => [
-        //'timeZone' => 'Asia/Kolkata',
+        'timeZone' => 'Asia/Kolkata',
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
         'authManager' => [
             'class' => 'yii\rbac\DbManager',
         ],
-    ],
+     ],
 ];

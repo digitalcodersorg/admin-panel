@@ -155,9 +155,9 @@ class UserController extends Controller {
                 $model->cms_user_avatar = '';
             }
             if (empty($id)) {
-                $model->created_at = new Expression('NOW()');
+                $model->created_at = date('Y-m-d H:i:s');
             }
-            $model->updated_at = new Expression('NOW()');
+            $model->updated_at = date('Y-m-d H:i:s');
 
 // If password is blank
             if (empty($model->password_hash) && !empty($id)) {
@@ -252,11 +252,11 @@ class UserController extends Controller {
             throw new ForbiddenHttpException;
         }
         $user = new User();
-        $pages = new Pagination(['totalCount' => 2]);
+        $userdata = $user->search(Yii::$app->request->queryParams, 'frontend_user');
         return $this->render('customer-list', [
-                    'users' => $user->search(Yii::$app->request->queryParams, 'frontend_user'),
+                    'users' => $userdata['data'],
+                    'pages' => $userdata['pagination'],
                     'username' => isset(Yii::$app->request->queryParams['username']) ? Yii::$app->request->queryParams['username'] : "",
-                    'pages' => $pages,
         ]);
     }
 
@@ -311,6 +311,7 @@ class UserController extends Controller {
             $defaultBilling->save();
             $model->confirm_password = $model->password_hash;
             $model->attributes = $post['User'];
+            $model->updated_at = date('Y-m-d H:i:s');
             if ($model->validate()) {
                 $model->save();
                 return 1;

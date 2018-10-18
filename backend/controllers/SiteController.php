@@ -81,12 +81,19 @@ class SiteController extends Controller
         $subscription_count['all'] = Subscription::getCounts('','count');
         $subscription_count['active'] = Subscription::getCounts('Active','count');
         $subscription_count['suspend'] = Subscription::getCounts('Suspend','count');
+        $role = '';
+        if (Yii::$app->user->can('assign-ticket')) {
+            $role = 'assigner';
+        }
+        if (Yii::$app->user->can('is-admin')) {
+            $role = 'admin';
+        }
         
-        $tickets_count['all'] = Ticket::search(['status'=>''],'count');
-        $tickets_count['open'] = Ticket::search(['status'=>'Open'],'count');
-        $tickets_count['closed'] = Ticket::search(['status'=>'Closed'],'count');
-        $tickets_count['resolved'] = Ticket::search(['status'=>'Resolve'],'count');
-        $tickets_count['inprocess'] = Ticket::search(['status'=>'Inprocess'],'count');
+        $tickets_count['all'] = Ticket::search(['status'=>''],'count',$role, Yii::$app->user->identity->id);
+        $tickets_count['open'] = Ticket::search(['status'=>'Open'],'count',$role, Yii::$app->user->identity->id);
+        $tickets_count['closed'] = Ticket::search(['status'=>'Closed'],'count',$role, Yii::$app->user->identity->id);
+        $tickets_count['resolved'] = Ticket::search(['status'=>'Resolve'],'count',$role, Yii::$app->user->identity->id);
+        $tickets_count['inprocess'] = Ticket::search(['status'=>'Inprocess'],'count',$role, Yii::$app->user->identity->id);
         ///echo date('Y-m-d',strtotime("first day of this month"));
         $user_count['all'] = User::getCount('', 'count');
         $user_count['this_month'] = User::getCount(date('Y-m-d',strtotime("first day of this month")), 'count');

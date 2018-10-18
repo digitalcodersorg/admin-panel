@@ -57,7 +57,6 @@ class TicketController extends Controller {
         $model = new Ticket();
         if (Yii::$app->request->post()) {
             $post = Yii::$app->request->post();
-            
             $ticket = $model->insertTicket($post);
             if($ticket){
                return $this->redirect(['ticket/view?id='.$ticket]); 
@@ -87,7 +86,8 @@ class TicketController extends Controller {
         if (!empty($branch)) {
             $departments = Department::find()->select(['ID', 'name'])->where(['parent' => $branch])->createCommand()->queryAll();
         }
-        $users = isset($q['department']) ? User::getUserByDepartment($q['department']) : [];
+        $allUser = User::find()->select(['id','username'])->where(['type'=>'cms_user'])->asArray()->all();
+        $users = isset($q['department']) ? User::getUserByDepartment($q['department']) : $allUser;
         $tickets = Ticket::search(Yii::$app->request->queryParams, '', $role, Yii::$app->user->identity->id);
         $branches = Department::find()->select(['ID', 'name'])->where(['status' => 'Active', 'parent' => NULL])->createCommand()->queryAll();
         return $this->render('ticketlist', [
@@ -106,10 +106,51 @@ class TicketController extends Controller {
         return $this->render('customers', []);
     }
 
-    public function actionSuppiler() {
-        return $this->render('supplier', []);
-    }
+    public function actionDownload() {
+        $tickets = Ticket::search(Yii::$app->request->queryParams, '', 'admin', Yii::$app->user->identity->id, 999999);
+        $ticket_subjects = Yii::$app->params['ticket_subjects'];
+        if (!empty($tickets)) {
 
+            foreach ($tickets['data'] as $ticket) {
+                $ticketsdata[] = array(
+                    'id' => $ticket['ticket_code'],
+                    'ticket_text' => $ticket['ticket_text'],
+                    'subject' => $ticket_subjects[$ticket['ticket_subject']],
+                    'category' => $ticket['category'],
+                    'priority' => $ticket['ticket_priority'],
+                    'status' => $ticket['ticket_status'],
+                    'created_by' => $ticket['created_by_name'],
+                    'ticket_owener' => $ticket['ticket_owener_name'],
+                    'assign_to' => $ticket['assigned_to_name'],
+                    'department' => $ticket['department_name'],
+                    'created_at' => $ticket['created_on'],
+                    'updated_at' => $ticket['updated_on'],
+                );
+            }
+        } else {
+            $ticketsdata[] = array('id' => 'NO DATA FOUND');
+        }
+        $result = array(
+            array("Ticket ID", "Ticket Text","Subject", "Category", "Priority", "Status", "Created By","Ticket Owner", "Assign To","Department", "Created On", "Last Updated"),
+            $ticketsdata,
+            "Csv"
+        );
+        if (!empty($result)) {
+            $fp = fopen('php://output', 'w');
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="ticketdata-' . time() . '.csv"');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+            fputcsv($fp, $result[0]);
+
+            for ($i = 0; $i < count($result[1]); $i++) {
+                fputcsv($fp, $result[1][$i]);
+            }
+            fclose($fp);
+        }
+        exit();
+    }
+    
     /**
      * Displays a single Post model.
      * @param string $id
@@ -136,9 +177,7 @@ class TicketController extends Controller {
             $ticketUpdate->updated_on = date('Y-m-d H:i:s');
             $ticketUpdate->ticket_status = 'Inprocess';
             $ticketUpdate->save();
-            $ticket['data'][0]['ticket_status'] = 'Inprocess';
-            $ticket['data'][0]['updated_on'] = date('Y-m-d H:i:s');
-            $ticket['data'][0]['status_updated_on'] = date('Y-m-d H:i:s');
+            $ticket = Ticket::searchOne($id);
         }
 
         $userData = User::find()->where(['id' => $ticket['ticket_owener']])->asArray()->one();

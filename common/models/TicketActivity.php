@@ -93,12 +93,16 @@ class TicketActivity extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Tickets::className(), ['ID' => 'ticket_id']);
     }
-    public static function getActivities($ticket_id){
+    public static function getActivities($ticket_id, $type = ""){
         if(!empty($ticket_id)){
             $search = TicketActivity::find();
             $search->select([TicketActivity::tableName().'.*','u.username as activity_by']);
             $search->join('left join', User::tableName().' as u', 'u.id='.TicketActivity::tableName().'.created_by');
-            $search->where(['ticket_id'=>$ticket_id]);
+            $search->where([TicketActivity::tableName().'.ticket_id'=>$ticket_id]);
+            if(!empty($type)){
+                $search = $search->andWhere([TicketActivity::tableName().'.type'=>$type]);
+            }
+            $search->orderBy(['created_on' => SORT_DESC]);
             return $search->asArray()->all();
         }
         return NULL;

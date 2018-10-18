@@ -12,11 +12,11 @@ $this->title = "Create Ticket";
 $ticket_subjects = Yii::$app->params['ticket_subjects'];
 ?>
 <div class="row x_panel user-create">
-    <?php $form = ActiveForm::begin(['action' => '', "id" => "create-ticket", 'options' => ['enctype' => 'multipart/form-data'],]); ?>
+    <?php $form = ActiveForm::begin(['action' => '', "id" => "create-new-ticket", 'options' => ['enctype' => 'multipart/form-data'],]); ?>
         <div class="form-group col-md-4 col-xs-12">
             <label class="control-label">Customer username (Login ID)</label>
             <input type="text" value="" class="form-control search-user" placeholder="Search Customers"/>
-            <input type="hidden" name="ticket_owener" value=""/>
+            <input type="hidden" name="ticket_owener" value="" class="required-input"/>
             <input type="hidden" name="created_by" value="<?= $current_user?>"/>
             <ul class="dropdown-menu searched-text" aria-labelledby="dropdownMenu1">
                 
@@ -24,7 +24,7 @@ $ticket_subjects = Yii::$app->params['ticket_subjects'];
         </div>
         <div class="form-group col-md-4 col-xs-12">
             <label class="control-label">Subject</label>
-            <select class="form-control search-filter" name="subject">
+            <select class="form-control search-filter required-input" name="subject">
                 <option value="">Ticket Subject</option>
                 <?php foreach ($ticket_subjects as $k => $v) { ?>
                     <option value="<?= $k ?>"><?= $v ?></option>
@@ -33,7 +33,7 @@ $ticket_subjects = Yii::$app->params['ticket_subjects'];
         </div>
         <div class="form-group col-md-4 col-xs-12">
             <label class="control-label">Priority</label>
-            <select class="form-control" name="priority">
+            <select class="form-control required-input" name="priority">
                 <option value="Low" selected="">Low</option>
                 <option value="Normal">Normal</option>
                 <option value="High">High</option>
@@ -42,7 +42,7 @@ $ticket_subjects = Yii::$app->params['ticket_subjects'];
         </div>
         <div class="form-group col-md-6 col-xs-12">
             <label class="control-label">Ticket Text</label>
-            <textarea name="ticket_text" class="form-control"></textarea>
+            <textarea name="ticket_text" class="form-control required-input"></textarea>
         </div>
     <!--        <div class="form-group col-md-6 col-xs-12">
                 <label class="control-label">Comment</label>
@@ -69,6 +69,7 @@ $ticket_subjects = Yii::$app->params['ticket_subjects'];
             <label class="control-label">Company Name</label>
             <input type="text" name="ticket_contact[company]" value="" class="form-control"/>
         </div>
+        <?php  if (Yii::$app->user->can('assign-ticket')) { ?>
         <label class="col-md-12 control-label">Assign Ticket : </label>
         <div class="form-group col-md-4 col-xs-12">
             <label class="control-label " for="depart_list">Branch </label>
@@ -96,8 +97,9 @@ $ticket_subjects = Yii::$app->params['ticket_subjects'];
                 <option value="">Select user to forward ticket</option>
             </select>
         </div>
+        <?php }?>
         <div class="form-group col-md-12 col-xs-12">
-            <input type="submit" class="btn btn-primary" value="Create"/>
+            <input type="button" class="btn btn-primary" id="create-new-tkt-btn" value="Create"/>
             <input type="reset" class="btn btn-primary" value="Reset"/>
         </div>
     <?php ActiveForm::end(); ?>
