@@ -295,7 +295,7 @@ class ApiController extends Controller {
     public function actionSendmail(){
          echo "\nStarted at : " . date("h:i:s");
          Yii::$app->mailer->compose()
-                ->setFrom('jdeveloper.vimal@gmail.com')
+                ->setFrom('info@japman.co.in')
                 ->setTo('vimal043kumar@gmail.com')
                 ->setSubject('Message subject')
                 ->setTextBody('Plain text content')
